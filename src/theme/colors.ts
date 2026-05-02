@@ -1,0 +1,17 @@
+export const palette = {
+  primary: '#ec4913',
+  backgroundLight: '#f8f6f6',
+  backgroundDark: '#221510',
+  slate900: '#0f172a',
+  slate800: '#1e293b',
+  slate700: '#334155',
+  slate600: '#475569',
+  slate500: '#64748b',
+  slate400: '#94a3b8',
+  slate300: '#cbd5e1',
+  slate200: '#e2e8f0',
+  slate100: '#f1f5f9',
+  white: '#ffffff',
+  amber100: '#fef3c7',
+  amber800: '#92400e',
+};
