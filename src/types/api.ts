@@ -1,4 +1,4 @@
-
+export type CategoriaMenu = 'STARTER' | 'MAIN' | 'DRINK' | 'DESSERT';
 
 export type StatusRestaurante = 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
 
@@ -33,3 +33,21 @@ export interface RestauranteResponseDTO {
   criadoEm: string;
 }
 
+export interface PratoResponseDTO {
+  id: number;
+  nome: string;
+  descricao: string | null;
+  preco: number;
+  categoria: CategoriaMenu;
+  disponivel: boolean | null;
+  fotoUrl: string | null;
+  restauranteId: number;
+  criadoEm: string;
+}
+
+export interface SpringPage<T> {
+  content: T[];
+  totalElements: number;
+  size: number;
+  number: number;
+}
