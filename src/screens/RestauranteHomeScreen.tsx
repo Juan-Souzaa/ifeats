@@ -11,12 +11,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
-import type { RootStackParamList } from '../navigation/types';
+import type { RestauranteStackParamList } from '../navigation/types';
 import { useRestauranteMeViewModel } from '../hooks/useRestauranteMeViewModel';
 import { useAuth } from '../context/AuthContext';
 import { palette } from '../theme/colors';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'RestauranteHome'>;
+type Props = NativeStackScreenProps<RestauranteStackParamList, 'RestauranteHome'>;
 
 export function RestauranteHomeScreen({ navigation }: Props): React.JSX.Element {
   const dark = useColorScheme() === 'dark';

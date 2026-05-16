@@ -18,11 +18,11 @@ import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRestauranteMeViewModel } from '../hooks/useRestauranteMeViewModel';
 import { usePratoCadastroViewModel } from '../hooks/usePratosViewModel';
-import type { RootStackParamList } from '../navigation/types';
+import type { RestauranteStackParamList } from '../navigation/types';
 import type { CategoriaMenu } from '../types/api';
 import { palette } from '../theme/colors';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'PratoCadastro'>;
+type Props = NativeStackScreenProps<RestauranteStackParamList, 'PratoCadastro'>;
 
 const CATEGORIAS: { key: CategoriaMenu; label: string }[] = [
   { key: 'STARTER', label: 'Entradas' },

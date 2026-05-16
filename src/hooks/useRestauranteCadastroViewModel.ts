@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import type { RestauranteRequestDTO } from '../types/api';
 import * as restauranteService from '../services/restauranteService';
+import { useEnderecoViaCep } from './useEnderecoViaCep';
 import { normalizeCep, validateCep, validateEstado, validateSenha } from '../utils/validation';
 
 const emptyEndereco = () => ({
@@ -23,6 +24,23 @@ export function useRestauranteCadastroViewModel() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const mergeEnderecoCep = useCallback((patch: {
+    logradouro?: string;
+    bairro?: string;
+    cidade?: string;
+    estado?: string;
+  }) => {
+    setEndereco((prev) => ({
+      ...prev,
+      ...(patch.logradouro ? { logradouro: patch.logradouro } : {}),
+      ...(patch.bairro ? { bairro: patch.bairro } : {}),
+      ...(patch.cidade ? { cidade: patch.cidade } : {}),
+      ...(patch.estado ? { estado: patch.estado } : {}),
+    }));
+  }, []);
+
+  const { cepBuscando, cepAviso } = useEnderecoViaCep(endereco.cep, mergeEnderecoCep);
 
   const setEnderecoField = useCallback(
     (field: keyof ReturnType<typeof emptyEndereco>, value: string) => {
@@ -109,6 +127,8 @@ export function useRestauranteCadastroViewModel() {
     loading,
     error,
     successMessage,
+    cepBuscando,
+    cepAviso,
     submit,
   };
 }

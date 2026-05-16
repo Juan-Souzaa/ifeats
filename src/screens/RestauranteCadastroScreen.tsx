@@ -11,11 +11,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import type { RootStackParamList } from '../navigation/types';
+import type { GuestStackParamList } from '../navigation/types';
 import { useRestauranteCadastroViewModel } from '../hooks/useRestauranteCadastroViewModel';
 import { palette } from '../theme/colors';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'RestauranteCadastro'>;
+type Props = NativeStackScreenProps<GuestStackParamList, 'RestauranteCadastro'>;
 
 export function RestauranteCadastroScreen({ navigation }: Props): React.JSX.Element {
   const dark = useColorScheme() === 'dark';
@@ -69,6 +69,27 @@ export function RestauranteCadastroScreen({ navigation }: Props): React.JSX.Elem
             sub={sub}
           />
           <Text style={[styles.section, { color: text }]}>Endereço</Text>
+          <View style={styles.cepRow}>
+            <View style={{ flex: 1 }}>
+              <Field
+                label="CEP"
+                value={vm.endereco.cep}
+                onChangeText={(t) => vm.setEnderecoField('cep', t)}
+                keyboardType="number-pad"
+                borderColor={border}
+                color={text}
+                sub={sub}
+                maxLength={9}
+              />
+            </View>
+            {vm.cepBuscando ? (
+              <ActivityIndicator style={{ marginTop: 22, marginLeft: 8 }} color={palette.primary} />
+            ) : null}
+          </View>
+          {vm.cepAviso ? <Text style={styles.cepHint}>{vm.cepAviso}</Text> : null}
+          <Text style={[styles.cepHelp, { color: sub }]}>
+            Ao completar o CEP, o endereço pode ser preenchido automaticamente.
+          </Text>
           <Field
             label="Logradouro"
             value={vm.endereco.logradouro}
@@ -115,15 +136,6 @@ export function RestauranteCadastroScreen({ navigation }: Props): React.JSX.Elem
             onChangeText={(t) => vm.setEnderecoField('estado', t.toUpperCase().slice(0, 2))}
             autoCapitalize="characters"
             maxLength={2}
-            borderColor={border}
-            color={text}
-            sub={sub}
-          />
-          <Field
-            label="CEP"
-            value={vm.endereco.cep}
-            onChangeText={(t) => vm.setEnderecoField('cep', t)}
-            keyboardType="number-pad"
             borderColor={border}
             color={text}
             sub={sub}
@@ -198,6 +210,9 @@ const styles = StyleSheet.create({
   label: { fontSize: 13, fontWeight: '600', marginBottom: 4 },
   input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, height: 44, fontSize: 15 },
   error: { color: '#b91c1c', marginTop: 8 },
+  cepRow: { flexDirection: 'row', alignItems: 'flex-start' },
+  cepHint: { color: '#b45309', fontSize: 13, marginTop: -4, marginBottom: 4 },
+  cepHelp: { fontSize: 12, marginBottom: 8, lineHeight: 16 },
   ok: { color: '#15803d', marginTop: 8, fontWeight: '600' },
   btn: {
     marginTop: 16,

@@ -18,7 +18,7 @@ import { usePratosViewModel } from '../hooks/usePratosViewModel';
 import { formatPrecoBRL } from '../utils/preco';
 import { resolveMediaUrl } from '../utils/imageUrl';
 import { palette } from '../theme/colors';
-import type { RootStackParamList } from '../navigation/types';
+import type { RestauranteStackParamList } from '../navigation/types';
 import type { CategoriaMenu, PratoResponseDTO } from '../types/api';
 
 const CATEGORIA_LABEL: Record<CategoriaMenu, string> = {
@@ -28,7 +28,7 @@ const CATEGORIA_LABEL: Record<CategoriaMenu, string> = {
   DESSERT: 'Sobremesas',
 };
 
-type Props = NativeStackScreenProps<RootStackParamList, 'PratosList'>;
+type Props = NativeStackScreenProps<RestauranteStackParamList, 'PratosList'>;
 
 export function PratosListScreen({ navigation }: Props): React.JSX.Element {
   const dark = useColorScheme() === 'dark';
