@@ -60,3 +60,12 @@ export type JwtRole =
   | 'ROLE_ENTREGADOR'
   | 'ROLE_CLIENTE';
 
+export interface AdminRequestDTO {
+  username: string;
+  password: string;
+}
+
+export interface AdminResponseDTO {
+  id: number;
+  username: string;
+}
