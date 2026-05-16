@@ -51,3 +51,12 @@ export interface SpringPage<T> {
   size: number;
   number: number;
 }
+
+
+export type JwtRole =
+  | 'ROLE_USER'
+  | 'ROLE_ADMIN'
+  | 'ROLE_RESTAURANTE'
+  | 'ROLE_ENTREGADOR'
+  | 'ROLE_CLIENTE';
+

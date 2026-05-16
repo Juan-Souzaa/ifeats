@@ -1,6 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 
-const KEY = 'sigeg_jwt';
+const KEY = 'ifeats_jwt';
 
 export async function getStoredToken(): Promise<string | null> {
   try {
