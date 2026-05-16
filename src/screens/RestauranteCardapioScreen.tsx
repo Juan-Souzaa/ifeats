@@ -14,13 +14,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRestauranteCardapioViewModel } from '../hooks/useRestauranteCardapioViewModel';
-import type { RootStackParamList } from '../navigation/types';
+import type { ClienteStackParamList, RestauranteStackParamList } from '../navigation/types';
 import type { CategoriaMenu } from '../types/api';
 import { formatPrecoBRL } from '../utils/preco';
 import { resolveMediaUrl } from '../utils/imageUrl';
 import { palette } from '../theme/colors';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'RestauranteCardapio'>;
+type Props = NativeStackScreenProps<
+  RestauranteStackParamList | ClienteStackParamList,
+  'RestauranteCardapio'
+>;
 
 const TABS: { key: CategoriaMenu; label: string }[] = [
   { key: 'STARTER', label: 'Entradas' },
@@ -101,10 +104,10 @@ export function RestauranteCardapioScreen({ navigation, route }: Props): React.J
               <Text style={styles.ratingNum}>—</Text>
               <MaterialIcons name="star" size={18} color={palette.primary} />
             </View>
-            <Text style={[styles.rateLink, { color: palette.primary }]}>Avaliações na API em breve</Text>
+            <Text style={[styles.rateLink, { color: palette.primary }]}>Avaliações em breve</Text>
           </View>
           <View style={styles.metaRow}>
-            <Meta icon="schedule" text="SIGEG" />
+            <Meta icon="schedule" text="IFeats" />
             <Meta icon="directions-bike" text={rest.raioEntregaKm != null ? `${rest.raioEntregaKm} km` : 'Raio —'} />
             <Meta icon="phone" text={rest.telefone} />
           </View>

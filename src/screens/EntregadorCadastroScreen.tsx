@@ -12,12 +12,15 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import type { GuestStackParamList } from '../navigation/types';
-import { useRestauranteCadastroViewModel } from '../hooks/useRestauranteCadastroViewModel';
+import type { TipoVeiculo } from '../types/api';
+import { useEntregadorCadastroViewModel } from '../hooks/useEntregadorCadastroViewModel';
 import { palette } from '../theme/colors';
 
-type Props = NativeStackScreenProps<GuestStackParamList, 'RestauranteCadastro'>;
+type Props = NativeStackScreenProps<GuestStackParamList, 'EntregadorCadastro'>;
 
-export function RestauranteCadastroScreen({ navigation }: Props): React.JSX.Element {
+const VEICULOS: TipoVeiculo[] = ['MOTO', 'CARRO', 'BICICLETA', 'OUTRO'];
+
+export function EntregadorCadastroScreen({ navigation }: Props): React.JSX.Element {
   const dark = useColorScheme() === 'dark';
   const bg = dark ? palette.backgroundDark : palette.backgroundLight;
   const text = dark ? palette.slate100 : palette.slate900;
@@ -25,7 +28,7 @@ export function RestauranteCadastroScreen({ navigation }: Props): React.JSX.Elem
   const border = dark ? palette.slate700 : palette.slate300;
   const card = dark ? palette.slate800 : palette.white;
 
-  const vm = useRestauranteCadastroViewModel();
+  const vm = useEntregadorCadastroViewModel();
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: bg }]} edges={['top', 'bottom']}>
@@ -33,14 +36,16 @@ export function RestauranteCadastroScreen({ navigation }: Props): React.JSX.Elem
         <Pressable onPress={() => navigation.goBack()} hitSlop={12}>
           <MaterialIcons name="arrow-back" size={26} color={text} />
         </Pressable>
-        <Text style={[styles.topTitle, { color: text }]}>Novo restaurante</Text>
+        <Text style={[styles.topTitle, { color: text }]}>Entregador</Text>
         <View style={{ width: 26 }} />
       </View>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={[styles.card, { backgroundColor: card, borderColor: border }]}>
           <Field label="Nome" value={vm.nome} onChangeText={vm.setNome} borderColor={border} color={text} sub={sub} />
+          <Field label="CPF" value={vm.cpf} onChangeText={vm.setCpf} keyboardType="number-pad" borderColor={border} color={text} sub={sub} />
+          <Field label="Telefone" value={vm.telefone} onChangeText={vm.setTelefone} keyboardType="phone-pad" borderColor={border} color={text} sub={sub} />
           <Field
-            label="E-mail (será o login)"
+            label="E-mail"
             value={vm.email}
             onChangeText={vm.setEmail}
             autoCapitalize="none"
@@ -49,9 +54,8 @@ export function RestauranteCadastroScreen({ navigation }: Props): React.JSX.Elem
             color={text}
             sub={sub}
           />
-          <Field label="Telefone" value={vm.telefone} onChangeText={vm.setTelefone} borderColor={border} color={text} sub={sub} />
           <Field
-            label="Senha (6–20 caracteres)"
+            label="Senha (6–20)"
             value={vm.password}
             onChangeText={vm.setPassword}
             secureTextEntry
@@ -60,86 +64,59 @@ export function RestauranteCadastroScreen({ navigation }: Props): React.JSX.Elem
             sub={sub}
           />
           <Field
-            label="Raio entrega (km, opcional, mín. 0,1)"
-            value={vm.raioKm}
-            onChangeText={vm.setRaioKm}
-            keyboardType="decimal-pad"
+            label="URL foto CNH (opcional)"
+            value={vm.fotoCnhUrl}
+            onChangeText={vm.setFotoCnhUrl}
+            autoCapitalize="none"
             borderColor={border}
             color={text}
             sub={sub}
           />
-          <Text style={[styles.section, { color: text }]}>Endereço</Text>
-          <View style={styles.cepRow}>
-            <View style={{ flex: 1 }}>
-              <Field
-                label="CEP"
-                value={vm.endereco.cep}
-                onChangeText={(t) => vm.setEnderecoField('cep', t)}
-                keyboardType="number-pad"
-                borderColor={border}
-                color={text}
-                sub={sub}
-                maxLength={9}
-              />
-            </View>
-            {vm.cepBuscando ? (
-              <ActivityIndicator style={{ marginTop: 22, marginLeft: 8 }} color={palette.primary} />
-            ) : null}
+          <Text style={[styles.label, { color: sub }]}>Tipo de veículo</Text>
+          <View style={styles.veicRow}>
+            {VEICULOS.map((t) => (
+              <Pressable
+                key={t}
+                onPress={() => vm.setTipoVeiculo(t)}
+                style={[
+                  styles.veicChip,
+                  { borderColor: border },
+                  vm.tipoVeiculo === t && { backgroundColor: palette.primary, borderColor: palette.primary },
+                ]}
+              >
+                <Text style={[styles.veicTxt, { color: vm.tipoVeiculo === t ? palette.white : text }]}>{t}</Text>
+              </Pressable>
+            ))}
           </View>
-          {vm.cepAviso ? <Text style={styles.cepHint}>{vm.cepAviso}</Text> : null}
-          <Text style={[styles.cepHelp, { color: sub }]}>
-            Ao completar o CEP, o endereço pode ser preenchido automaticamente.
-          </Text>
           <Field
-            label="Logradouro"
-            value={vm.endereco.logradouro}
-            onChangeText={(t) => vm.setEnderecoField('logradouro', t)}
-            borderColor={border}
-            color={text}
-            sub={sub}
-          />
-          <Field
-            label="Número"
-            value={vm.endereco.numero}
-            onChangeText={(t) => vm.setEnderecoField('numero', t)}
-            borderColor={border}
-            color={text}
-            sub={sub}
-          />
-          <Field
-            label="Complemento (opcional)"
-            value={vm.endereco.complemento}
-            onChangeText={(t) => vm.setEnderecoField('complemento', t)}
-            borderColor={border}
-            color={text}
-            sub={sub}
-          />
-          <Field
-            label="Bairro"
-            value={vm.endereco.bairro}
-            onChangeText={(t) => vm.setEnderecoField('bairro', t)}
-            borderColor={border}
-            color={text}
-            sub={sub}
-          />
-          <Field
-            label="Cidade"
-            value={vm.endereco.cidade}
-            onChangeText={(t) => vm.setEnderecoField('cidade', t)}
-            borderColor={border}
-            color={text}
-            sub={sub}
-          />
-          <Field
-            label="Estado (UF, 2 letras)"
-            value={vm.endereco.estado}
-            onChangeText={(t) => vm.setEnderecoField('estado', t.toUpperCase().slice(0, 2))}
+            label="Placa"
+            value={vm.placaVeiculo}
+            onChangeText={(x) => vm.setPlacaVeiculo(x.toUpperCase())}
             autoCapitalize="characters"
-            maxLength={2}
             borderColor={border}
             color={text}
             sub={sub}
           />
+          <Text style={[styles.label, { color: sub }]}>Sua localização</Text>
+          <Pressable
+            style={[styles.locBtn, { borderColor: palette.primary }]}
+            disabled={vm.locLoading}
+            onPress={() => void vm.usarLocalizacao()}
+          >
+            {vm.locLoading ? (
+              <ActivityIndicator color={palette.primary} />
+            ) : (
+              <>
+                <MaterialIcons name="my-location" size={22} color={palette.primary} />
+                <Text style={styles.locTxt}>Usar minha localização</Text>
+              </>
+            )}
+          </Pressable>
+          {vm.latitude != null && vm.longitude != null ? (
+            <Text style={[styles.coords, { color: sub }]}>
+              Lat {vm.latitude.toFixed(5)} · Lon {vm.longitude.toFixed(5)}
+            </Text>
+          ) : null}
           {vm.error ? <Text style={styles.error}>{vm.error}</Text> : null}
           {vm.successMessage ? <Text style={styles.ok}>{vm.successMessage}</Text> : null}
           <Pressable
@@ -206,13 +183,29 @@ const styles = StyleSheet.create({
   topTitle: { fontSize: 17, fontWeight: '700' },
   scroll: { padding: 16, paddingBottom: 40 },
   card: { borderRadius: 16, padding: 16, borderWidth: 1 },
-  section: { fontWeight: '800', marginTop: 8, marginBottom: 4, fontSize: 16 },
   label: { fontSize: 13, fontWeight: '600', marginBottom: 4 },
   input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, height: 44, fontSize: 15 },
+  veicRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
+  veicChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  veicTxt: { fontWeight: '700', fontSize: 12 },
+  locBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderWidth: 2,
+    borderRadius: 10,
+    height: 48,
+    marginBottom: 8,
+  },
+  locTxt: { color: palette.primary, fontWeight: '700' },
+  coords: { fontSize: 12, marginBottom: 8 },
   error: { color: '#b91c1c', marginTop: 8 },
-  cepRow: { flexDirection: 'row', alignItems: 'flex-start' },
-  cepHint: { color: '#b45309', fontSize: 13, marginTop: -4, marginBottom: 4 },
-  cepHelp: { fontSize: 12, marginBottom: 8, lineHeight: 16 },
   ok: { color: '#15803d', marginTop: 8, fontWeight: '600' },
   btn: {
     marginTop: 16,

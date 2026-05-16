@@ -12,11 +12,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import type { RootStackParamList } from '../navigation/types';
+import type { GuestStackParamList } from '../navigation/types';
 import { useAuthViewModel } from '../hooks/useAuthViewModel';
 import { palette } from '../theme/colors';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
+type Props = NativeStackScreenProps<GuestStackParamList, 'Login'>;
 
 export function LoginScreen({ navigation }: Props): React.JSX.Element {
   const dark = useColorScheme() === 'dark';
@@ -35,18 +35,18 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
         style={styles.flex}
       >
         <View style={styles.header}>
-          <Text style={[styles.title, { color: text }]}>SIGEG</Text>
-          <Text style={[styles.subtitle, { color: sub }]}>Área do restaurante</Text>
+          <Text style={[styles.title, { color: text }]}>IFeats</Text>
+          <Text style={[styles.subtitle, { color: sub }]}>Entre com e-mail ou username e senha</Text>
         </View>
 
         <View style={[styles.card, { backgroundColor: card, borderColor: border }]}>
-          <Text style={[styles.label, { color: sub }]}>E-mail</Text>
+          <Text style={[styles.label, { color: sub }]}>E-mail ou username</Text>
           <TextInput
             value={vm.email}
             onChangeText={vm.setEmail}
             autoCapitalize="none"
             keyboardType="email-address"
-            placeholder="restaurante@email.com"
+            placeholder="cliente@email.com ou admin"
             placeholderTextColor={sub}
             style={[styles.input, { color: text, borderColor: border }]}
           />
@@ -82,13 +82,20 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
           </Pressable>
         </View>
 
-        <Pressable
-          style={styles.linkRow}
-          onPress={() => navigation.navigate('RestauranteCadastro')}
-        >
-          <MaterialIcons name="storefront" size={20} color={palette.primary} />
-          <Text style={styles.link}>Cadastrar restaurante</Text>
-        </Pressable>
+        <View style={styles.links}>
+          <Pressable style={styles.linkRow} onPress={() => navigation.navigate('ClienteCadastro')}>
+            <MaterialIcons name="person-add" size={20} color={palette.primary} />
+            <Text style={styles.link}>Criar conta cliente</Text>
+          </Pressable>
+          <Pressable style={styles.linkRow} onPress={() => navigation.navigate('RestauranteCadastro')}>
+            <MaterialIcons name="storefront" size={20} color={palette.primary} />
+            <Text style={styles.link}>Cadastrar restaurante</Text>
+          </Pressable>
+          <Pressable style={styles.linkRow} onPress={() => navigation.navigate('EntregadorCadastro')}>
+            <MaterialIcons name="delivery-dining" size={20} color={palette.primary} />
+            <Text style={styles.link}>Cadastrar entregador</Text>
+          </Pressable>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -99,7 +106,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1, paddingHorizontal: 20, justifyContent: 'center' },
   header: { marginBottom: 28, alignItems: 'center' },
   title: { fontSize: 32, fontWeight: '900', letterSpacing: -0.5 },
-  subtitle: { marginTop: 6, fontSize: 15, fontWeight: '500' },
+  subtitle: { marginTop: 6, fontSize: 15, fontWeight: '500', textAlign: 'center', paddingHorizontal: 8 },
   card: {
     borderRadius: 16,
     padding: 20,
@@ -127,8 +134,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   primaryBtnText: { color: palette.white, fontWeight: '700', fontSize: 16 },
+  links: { marginTop: 20, gap: 12 },
   linkRow: {
-    marginTop: 24,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

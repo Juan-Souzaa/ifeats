@@ -12,12 +12,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import type { GuestStackParamList } from '../navigation/types';
-import { useRestauranteCadastroViewModel } from '../hooks/useRestauranteCadastroViewModel';
+import { useClienteCadastroViewModel } from '../hooks/useClienteCadastroViewModel';
 import { palette } from '../theme/colors';
 
-type Props = NativeStackScreenProps<GuestStackParamList, 'RestauranteCadastro'>;
+type Props = NativeStackScreenProps<GuestStackParamList, 'ClienteCadastro'>;
 
-export function RestauranteCadastroScreen({ navigation }: Props): React.JSX.Element {
+export function ClienteCadastroScreen({ navigation }: Props): React.JSX.Element {
   const dark = useColorScheme() === 'dark';
   const bg = dark ? palette.backgroundDark : palette.backgroundLight;
   const text = dark ? palette.slate100 : palette.slate900;
@@ -25,7 +25,7 @@ export function RestauranteCadastroScreen({ navigation }: Props): React.JSX.Elem
   const border = dark ? palette.slate700 : palette.slate300;
   const card = dark ? palette.slate800 : palette.white;
 
-  const vm = useRestauranteCadastroViewModel();
+  const vm = useClienteCadastroViewModel();
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: bg }]} edges={['top', 'bottom']}>
@@ -33,7 +33,7 @@ export function RestauranteCadastroScreen({ navigation }: Props): React.JSX.Elem
         <Pressable onPress={() => navigation.goBack()} hitSlop={12}>
           <MaterialIcons name="arrow-back" size={26} color={text} />
         </Pressable>
-        <Text style={[styles.topTitle, { color: text }]}>Novo restaurante</Text>
+        <Text style={[styles.topTitle, { color: text }]}>Novo cliente</Text>
         <View style={{ width: 26 }} />
       </View>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
@@ -55,15 +55,6 @@ export function RestauranteCadastroScreen({ navigation }: Props): React.JSX.Elem
             value={vm.password}
             onChangeText={vm.setPassword}
             secureTextEntry
-            borderColor={border}
-            color={text}
-            sub={sub}
-          />
-          <Field
-            label="Raio entrega (km, opcional, mín. 0,1)"
-            value={vm.raioKm}
-            onChangeText={vm.setRaioKm}
-            keyboardType="decimal-pad"
             borderColor={border}
             color={text}
             sub={sub}
@@ -210,10 +201,10 @@ const styles = StyleSheet.create({
   label: { fontSize: 13, fontWeight: '600', marginBottom: 4 },
   input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, height: 44, fontSize: 15 },
   error: { color: '#b91c1c', marginTop: 8 },
+  ok: { color: '#15803d', marginTop: 8, fontWeight: '600' },
   cepRow: { flexDirection: 'row', alignItems: 'flex-start' },
   cepHint: { color: '#b45309', fontSize: 13, marginTop: -4, marginBottom: 4 },
   cepHelp: { fontSize: 12, marginBottom: 8, lineHeight: 16 },
-  ok: { color: '#15803d', marginTop: 8, fontWeight: '600' },
   btn: {
     marginTop: 16,
     backgroundColor: palette.primary,

@@ -1,4 +1,4 @@
-import type { RestauranteRequestDTO, RestauranteResponseDTO } from '../types/api';
+import type { RestauranteRequestDTO, RestauranteResponseDTO, SpringPage } from '../types/api';
 import { api, publicApi } from './http';
 
 export async function cadastrarRestaurante(
@@ -15,5 +15,15 @@ export async function buscarMeuRestaurante(): Promise<RestauranteResponseDTO> {
 
 export async function buscarRestaurantePorId(id: number): Promise<RestauranteResponseDTO> {
   const { data } = await api.get<RestauranteResponseDTO>(`/api/restaurantes/${id}`);
+  return data;
+}
+
+export async function listarRestaurantes(
+  page = 0,
+  size = 20
+): Promise<SpringPage<RestauranteResponseDTO>> {
+  const { data } = await api.get<SpringPage<RestauranteResponseDTO>>('/api/restaurantes', {
+    params: { page, size, sort: 'nome,asc' },
+  });
   return data;
 }

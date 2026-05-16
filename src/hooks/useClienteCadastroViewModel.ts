@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
-import type { RestauranteRequestDTO } from '../types/api';
-import * as restauranteService from '../services/restauranteService';
+import type { ClienteRequestDTO } from '../types/api';
+import * as clienteService from '../services/clienteService';
 import { useEnderecoViaCep } from './useEnderecoViaCep';
 import { normalizeCep, validateCep, validateEstado, validateSenha } from '../utils/validation';
 
@@ -14,33 +14,15 @@ const emptyEndereco = () => ({
   cep: '',
 });
 
-export function useRestauranteCadastroViewModel() {
+export function useClienteCadastroViewModel() {
   const [nome, setNome] = useState('');
   const [telefone, setTelefone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [raioKm, setRaioKm] = useState('');
   const [endereco, setEndereco] = useState(emptyEndereco);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  const mergeEnderecoCep = useCallback((patch: {
-    logradouro?: string;
-    bairro?: string;
-    cidade?: string;
-    estado?: string;
-  }) => {
-    setEndereco((prev) => ({
-      ...prev,
-      ...(patch.logradouro ? { logradouro: patch.logradouro } : {}),
-      ...(patch.bairro ? { bairro: patch.bairro } : {}),
-      ...(patch.cidade ? { cidade: patch.cidade } : {}),
-      ...(patch.estado ? { estado: patch.estado } : {}),
-    }));
-  }, []);
-
-  const { cepBuscando, cepAviso } = useEnderecoViaCep(endereco.cep, mergeEnderecoCep);
 
   const setEnderecoField = useCallback(
     (field: keyof ReturnType<typeof emptyEndereco>, value: string) => {
@@ -48,6 +30,21 @@ export function useRestauranteCadastroViewModel() {
     },
     []
   );
+
+  const mergeEnderecoCep = useCallback(
+    (patch: { logradouro?: string; bairro?: string; cidade?: string; estado?: string }) => {
+      setEndereco((prev) => ({
+        ...prev,
+        ...(patch.logradouro ? { logradouro: patch.logradouro } : {}),
+        ...(patch.bairro ? { bairro: patch.bairro } : {}),
+        ...(patch.cidade ? { cidade: patch.cidade } : {}),
+        ...(patch.estado ? { estado: patch.estado } : {}),
+      }));
+    },
+    []
+  );
+
+  const { cepBuscando, cepAviso } = useEnderecoViaCep(endereco.cep, mergeEnderecoCep);
 
   const validate = useCallback((): string | null => {
     if (!nome.trim()) return 'Nome é obrigatório';
@@ -63,12 +60,8 @@ export function useRestauranteCadastroViewModel() {
     if (!email.trim()) return 'E-mail é obrigatório';
     const s = validateSenha(password);
     if (s) return s;
-    if (raioKm.trim()) {
-      const r = Number(raioKm.replace(',', '.'));
-      if (Number.isNaN(r) || r < 0.1) return 'Raio de entrega deve ser no mínimo 0,1 km';
-    }
     return null;
-  }, [nome, endereco, telefone, email, password, raioKm]);
+  }, [nome, endereco, telefone, email, password]);
 
   const submit = useCallback(async () => {
     setError(null);
@@ -78,7 +71,7 @@ export function useRestauranteCadastroViewModel() {
       setError(v);
       return null;
     }
-    const dto: RestauranteRequestDTO = {
+    const dto: ClienteRequestDTO = {
       nome: nome.trim(),
       telefone: telefone.trim(),
       email: email.trim(),
@@ -93,13 +86,10 @@ export function useRestauranteCadastroViewModel() {
         ...(endereco.complemento.trim() ? { complemento: endereco.complemento.trim() } : {}),
       },
     };
-    if (raioKm.trim()) {
-      dto.raioEntregaKm = Number(raioKm.replace(',', '.'));
-    }
     setLoading(true);
     try {
-      const res = await restauranteService.cadastrarRestaurante(dto);
-      setSuccessMessage(`Restaurante criado. Status: ${res.status}. Faça login com o e-mail cadastrado.`);
+      const res = await clienteService.cadastrarCliente(dto);
+      setSuccessMessage(`Conta criada. Faça login com o e-mail ${res.email}.`);
       return res;
     } catch (e: unknown) {
       const data = (e as { response?: { data?: { message?: string } } })?.response?.data;
@@ -109,7 +99,7 @@ export function useRestauranteCadastroViewModel() {
     } finally {
       setLoading(false);
     }
-  }, [nome, telefone, email, password, raioKm, endereco, validate]);
+  }, [nome, telefone, email, password, endereco, validate]);
 
   return {
     nome,
@@ -120,8 +110,6 @@ export function useRestauranteCadastroViewModel() {
     setEmail,
     password,
     setPassword,
-    raioKm,
-    setRaioKm,
     endereco,
     setEnderecoField,
     loading,
