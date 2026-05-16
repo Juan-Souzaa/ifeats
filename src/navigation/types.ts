@@ -9,3 +9,11 @@ export type RootStackParamList = {
   PratoEditar: { prato: PratoResponseDTO };
   RestauranteCardapio: { restauranteId: number };
 };
+export type ClienteStackParamList = {
+  ClienteRestaurantes: undefined;
+  ClientePerfil: undefined;
+  ClienteMeusEnderecos: undefined;
+  ClienteAlterarSenha: undefined;
+  ClienteTickets: undefined;
+  RestauranteCardapio: { restauranteId: number };
+};
