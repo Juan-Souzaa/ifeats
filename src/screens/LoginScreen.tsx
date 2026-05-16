@@ -82,13 +82,10 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
           </Pressable>
         </View>
 
-        <Pressable
-          style={styles.linkRow}
-          onPress={() => navigation.navigate('RestauranteCadastro')}
-        >
-          <MaterialIcons name="storefront" size={20} color={palette.primary} />
-          <Text style={styles.link}>Cadastrar restaurante</Text>
-        </Pressable>
+          <Pressable style={styles.linkRow} onPress={() => navigation.navigate('ClienteCadastro')}>
+            <MaterialIcons name="person-add" size={20} color={palette.primary} />
+            <Text style={styles.link}>Criar conta cliente</Text>
+          </Pressable>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

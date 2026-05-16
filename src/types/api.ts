@@ -60,6 +60,14 @@ export type JwtRole =
   | 'ROLE_ENTREGADOR'
   | 'ROLE_CLIENTE';
 
+export interface ClienteRequestDTO {
+  nome: string;
+  email: string;
+  telefone: string;
+  endereco: EnderecoRequestDTO;
+  password: string;
+}
+
 export interface ClienteResponseDTO {
   id: number;
   nome: string;
@@ -69,6 +77,12 @@ export interface ClienteResponseDTO {
   ativo: boolean;
   criadoEm: string;
 }
+
+export interface AtualizarSenhaRequestDTO {
+  senhaAtual: string;
+  novaSenha: string;
+}
+
 export interface AdminRequestDTO {
   username: string;
   password: string;
