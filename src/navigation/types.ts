@@ -4,6 +4,7 @@ export type RootStackParamList = {
   Login: undefined;
   RestauranteCadastro: undefined;
   ClienteCadastro: undefined;
+  EntregadorCadastro: undefined;
   RestauranteHome: undefined;
   PratosList: undefined;
   PratoCadastro: undefined;
@@ -17,4 +18,8 @@ export type ClienteStackParamList = {
   ClienteAlterarSenha: undefined;
   ClienteTickets: undefined;
   RestauranteCardapio: { restauranteId: number };
+};
+
+export type EntregadorStackParamList = {
+  EntregadorArea: undefined;
 };
