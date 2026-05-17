@@ -1,4 +1,4 @@
-export type CategoriaMenu = 'STARTER' | 'MAIN' | 'DRINK' | 'DESSERT';
+﻿export type CategoriaMenu = 'STARTER' | 'MAIN' | 'DRINK' | 'DESSERT';
 
 export type StatusRestaurante = 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
 
@@ -30,6 +30,10 @@ export interface RestauranteResponseDTO {
   email: string;
   status: StatusRestaurante;
   raioEntregaKm: number | null;
+  distanciaKm?: number | null;
+  tempoEstimadoMinutos?: number | null;
+  mediaAvaliacao?: number | null;
+  totalAvaliacoes?: number | null;
   criadoEm: string;
 }
 
@@ -128,4 +132,16 @@ export interface EntregadorResponseDTO {
   longitude: number;
   criadoEm: string;
   atualizadoEm: string;
+}
+export interface RestauranteBuscaDTO {
+  id: number;
+  nome: string;
+  endereco: string;
+  telefone: string;
+  distanciaKm: number | null;
+  tempoEstimadoMinutos: number | null;
+  raioEntregaKm: number | null;
+  fotoUrl: string | null;
+  mediaAvaliacao: number | null;
+  totalAvaliacoes: number | null;
 }

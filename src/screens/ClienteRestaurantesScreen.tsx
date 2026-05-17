@@ -1,5 +1,5 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -14,13 +14,14 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
+import { RestauranteCover } from '../components/RestauranteCover';
 import type { ClienteStackParamList } from '../navigation/types';
 import type { RestauranteResponseDTO, StatusRestaurante } from '../types/api';
 import { useClienteRestaurantesViewModel } from '../hooks/useClienteRestaurantesViewModel';
 import { useClienteMeViewModel } from '../hooks/useClienteMeViewModel';
 import { palette } from '../theme/colors';
+import { formatDistanciaKm, formatTempoMinutos } from '../utils/distancia';
 
 type Props = NativeStackScreenProps<ClienteStackParamList, 'ClienteRestaurantes'>;
 
@@ -31,18 +32,19 @@ const CATEGORIAS: {
   label: string;
   icon: keyof typeof MaterialIcons.glyphMap;
   keywords: string[];
+  cozinhaApi?: string;
   lightBg: string;
   lightIcon: string;
   darkBg: string;
   darkIcon: string;
 }[] = [
   { key: 'all', label: 'Todos', icon: 'restaurant', keywords: [], lightBg: '#fff7ed', lightIcon: '#ea580c', darkBg: 'rgba(234,88,12,0.2)', darkIcon: '#fb923c' },
-  { key: 'pizza', label: 'Pizza', icon: 'local-pizza', keywords: ['pizza', 'pizz'], lightBg: '#ffedd5', lightIcon: '#ea580c', darkBg: 'rgba(234,88,12,0.2)', darkIcon: '#fdba74' },
-  { key: 'burger', label: 'Hambúrguer', icon: 'fastfood', keywords: ['burg', 'hamb', 'lanche', 'sand'], lightBg: '#fef3c7', lightIcon: '#d97706', darkBg: 'rgba(217,119,6,0.2)', darkIcon: '#fcd34d' },
-  { key: 'sushi', label: 'Sushi', icon: 'set-meal', keywords: ['sushi', 'sashimi', 'jap'], lightBg: '#fee2e2', lightIcon: '#dc2626', darkBg: 'rgba(220,38,38,0.2)', darkIcon: '#fca5a5' },
-  { key: 'healthy', label: 'Saudável', icon: 'spa', keywords: ['salad', 'salada', 'natural', 'vegan', 'green', 'bowl'], lightBg: '#dcfce7', lightIcon: '#16a34a', darkBg: 'rgba(22,163,74,0.2)', darkIcon: '#86efac' },
-  { key: 'sweet', label: 'Sobremesa', icon: 'icecream', keywords: ['doce', 'sobre', 'doceria', 'cake', 'gelad'], lightBg: '#dbeafe', lightIcon: '#2563eb', darkBg: 'rgba(37,99,235,0.2)', darkIcon: '#93c5fd' },
-  { key: 'asian', label: 'Asiática', icon: 'ramen-dining', keywords: ['asia', 'chin', 'tail', 'core', 'thai', 'yakisoba'], lightBg: '#f3e8ff', lightIcon: '#9333ea', darkBg: 'rgba(147,51,234,0.2)', darkIcon: '#d8b4fe' },
+  { key: 'pizza', label: 'Pizza', icon: 'local-pizza', keywords: ['pizza', 'pizz', 'italian'], cozinhaApi: 'pizza', lightBg: '#ffedd5', lightIcon: '#ea580c', darkBg: 'rgba(234,88,12,0.2)', darkIcon: '#fdba74' },
+  { key: 'burger', label: 'Hambúrguer', icon: 'fastfood', keywords: ['burg', 'hamb', 'lanche', 'lab'], cozinhaApi: 'burger', lightBg: '#fef3c7', lightIcon: '#d97706', darkBg: 'rgba(217,119,6,0.2)', darkIcon: '#fcd34d' },
+  { key: 'sushi', label: 'Sushi', icon: 'set-meal', keywords: ['sushi', 'sashimi', 'jap', 'zen'], cozinhaApi: 'sushi', lightBg: '#fee2e2', lightIcon: '#dc2626', darkBg: 'rgba(220,38,38,0.2)', darkIcon: '#fca5a5' },
+  { key: 'healthy', label: 'Saudável', icon: 'spa', keywords: ['salad', 'salada', 'natural', 'vegan', 'green', 'bowl'], cozinhaApi: 'green', lightBg: '#dcfce7', lightIcon: '#16a34a', darkBg: 'rgba(22,163,74,0.2)', darkIcon: '#86efac' },
+  { key: 'sweet', label: 'Sobremesa', icon: 'icecream', keywords: ['doce', 'sobre', 'doceria', 'cake', 'gelad', 'açaí', 'acai', 'padaria', 'mania'], lightBg: '#dbeafe', lightIcon: '#2563eb', darkBg: 'rgba(37,99,235,0.2)', darkIcon: '#93c5fd' },
+  { key: 'asian', label: 'Asiática', icon: 'ramen-dining', keywords: ['asia', 'chin', 'china', 'wok', 'tail', 'core', 'thai', 'yakisoba', 'zen', 'tapioca'], lightBg: '#f3e8ff', lightIcon: '#9333ea', darkBg: 'rgba(147,51,234,0.2)', darkIcon: '#d8b4fe' },
 ];
 
 const HIGHLIGHT_GRADIENTS: [string, string][] = [
@@ -78,6 +80,15 @@ function gradientForId(id: number): [string, string] {
   return HIGHLIGHT_GRADIENTS[Math.abs(id) % HIGHLIGHT_GRADIENTS.length]!;
 }
 
+function formatAvaliacao(item: RestauranteResponseDTO): string {
+  const media = item.mediaAvaliacao;
+  const total = item.totalAvaliacoes;
+  if (media != null && total != null && total > 0) {
+    return `${Number(media).toFixed(1)} (${total})`;
+  }
+  return '—';
+}
+
 export function ClienteRestaurantesScreen({ navigation }: Props): React.JSX.Element {
   const dark = useColorScheme() === 'dark';
   const insets = useSafeAreaInsets();
@@ -109,16 +120,33 @@ export function ClienteRestaurantesScreen({ navigation }: Props): React.JSX.Elem
 
   useFocusEffect(
     useCallback(() => {
-      void vm.init();
-    }, [vm.init])
+      void Promise.all([vm.init(), me.refresh()]);
+    }, [vm.init, me.refresh])
   );
 
+  const onSelectCategoria = useCallback(
+    (key: CatKey) => {
+      setCatSelecionada(key);
+      setSearchQuery('');
+      const cat = CATEGORIAS.find((c) => c.key === key);
+      void vm.filterByCozinha(cat?.cozinhaApi);
+    },
+    [vm.filterByCozinha]
+  );
+
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (q.length < 2) return;
+    const t = setTimeout(() => void vm.buscar(q), 400);
+    return () => clearTimeout(t);
+  }, [searchQuery, vm.buscar]);
+
   const filtrados = useMemo(() => {
-    let out = vm.items.filter((r) => matchesCategory(r, catSelecionada));
+    const out = vm.items.filter((r) => matchesCategory(r, catSelecionada));
     const q = searchQuery.trim().toLowerCase();
-    if (q) {
-      out = out.filter(
-        (r) => r.nome.toLowerCase().includes(q) || r.endereco.toLowerCase().includes(q)
+    if (q.length < 2) {
+      return out.filter(
+        (r) => !q || r.nome.toLowerCase().includes(q) || r.endereco.toLowerCase().includes(q)
       );
     }
     return out;
@@ -144,18 +172,17 @@ export function ClienteRestaurantesScreen({ navigation }: Props): React.JSX.Elem
           onPress={() => navigation.navigate('RestauranteCardapio', { restauranteId: item.id })}
           style={({ pressed }) => [styles.destaqueCard, { opacity: pressed ? 0.92 : 1 }]}
         >
-          <View style={styles.destaqueImgWrap}>
-            <LinearGradient colors={g} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+          <RestauranteCover fotoUrl={item.fotoUrl} gradient={g} style={styles.destaqueImgWrap}>
             <View style={styles.badgeStar}>
               <MaterialIcons name="star" size={14} color="#f59e0b" />
-              <Text style={styles.badgeStarText}>Em breve</Text>
+              <Text style={styles.badgeStarText}>{formatAvaliacao(item)}</Text>
             </View>
-            {item.raioEntregaKm != null ? (
+            {formatDistanciaKm(item.distanciaKm) ? (
               <View style={styles.badgeTime}>
-                <Text style={styles.badgeTimeText}>Até {item.raioEntregaKm} km</Text>
+                <Text style={styles.badgeTimeText}>{formatDistanciaKm(item.distanciaKm)}</Text>
               </View>
             ) : null}
-          </View>
+          </RestauranteCover>
           <View style={styles.destaqueBody}>
             <Text style={[styles.destaqueNome, { color: text }]} numberOfLines={1}>
               {item.nome}
@@ -196,14 +223,13 @@ export function ClienteRestaurantesScreen({ navigation }: Props): React.JSX.Elem
             },
           ]}
         >
-          <View style={styles.listImgWrap}>
-            <LinearGradient colors={g} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+          <RestauranteCover fotoUrl={item.fotoUrl} gradient={g} style={styles.listImgWrap}>
             {!open ? (
               <View style={styles.listImgOverlay}>
                 <Text style={styles.fechadoBadge}>{legendaStatus(item.status)}</Text>
               </View>
             ) : null}
-          </View>
+          </RestauranteCover>
           <View style={styles.listBody}>
             <View style={styles.listTitleRow}>
               <Text style={[styles.listNome, { color: text }]} numberOfLines={2}>
@@ -211,7 +237,7 @@ export function ClienteRestaurantesScreen({ navigation }: Props): React.JSX.Elem
               </Text>
               <View style={[styles.miniStar, { backgroundColor: dark ? palette.slate700 : palette.slate100 }]}>
                 <MaterialIcons name="star" size={12} color="#f59e0b" />
-                <Text style={[styles.miniStarText, { color: text }]}>—</Text>
+                <Text style={[styles.miniStarText, { color: text }]}>{formatAvaliacao(item)}</Text>
               </View>
             </View>
             <Text style={[styles.listSub, { color: sub }]} numberOfLines={1}>
@@ -220,12 +246,23 @@ export function ClienteRestaurantesScreen({ navigation }: Props): React.JSX.Elem
             <View style={styles.listFoot}>
               {open ? (
                 <>
-                  <View style={styles.chipTime}>
-                    <MaterialIcons name="schedule" size={14} color={palette.primary} />
-                    <Text style={styles.chipTimeText}>{legendaStatus(item.status)}</Text>
-                  </View>
-                  {item.raioEntregaKm != null ? (
-                    <Text style={[styles.listFootMeta, { color: sub }]}>Até {item.raioEntregaKm} km</Text>
+                  {formatDistanciaKm(item.distanciaKm) ? (
+                    <View style={styles.chipTime}>
+                      <MaterialIcons name="near-me" size={14} color={palette.primary} />
+                      <Text style={styles.chipTimeText}>{formatDistanciaKm(item.distanciaKm)}</Text>
+                    </View>
+                  ) : (
+                    <View style={styles.chipTime}>
+                      <MaterialIcons name="schedule" size={14} color={palette.primary} />
+                      <Text style={styles.chipTimeText}>{legendaStatus(item.status)}</Text>
+                    </View>
+                  )}
+                  {formatTempoMinutos(item.tempoEstimadoMinutos) ? (
+                    <Text style={[styles.listFootMeta, { color: sub }]}>
+                      {formatTempoMinutos(item.tempoEstimadoMinutos)}
+                    </Text>
+                  ) : item.raioEntregaKm != null ? (
+                    <Text style={[styles.listFootMeta, { color: sub }]}>Entrega até {item.raioEntregaKm} km</Text>
                   ) : (
                     <Text style={[styles.listFootMeta, { color: sub }]}> </Text>
                   )}
@@ -246,7 +283,11 @@ export function ClienteRestaurantesScreen({ navigation }: Props): React.JSX.Elem
   const listHeader = useMemo(
     () => (
       <>
-        <View style={[styles.locRow, { backgroundColor: stickyBg }]}>
+        <Pressable
+          style={[styles.locRow, { backgroundColor: stickyBg }]}
+          onPress={() => navigation.navigate('ClienteMeusEnderecos')}
+          accessibilityLabel="Alterar endereço de entrega"
+        >
           <View style={styles.locTextWrap}>
             <Text style={[styles.locLabel, { color: sub }]}>Entregando em</Text>
             <View style={styles.locLine}>
@@ -263,7 +304,7 @@ export function ClienteRestaurantesScreen({ navigation }: Props): React.JSX.Elem
           >
             <MaterialIcons name="person" size={22} color={dark ? palette.slate200 : palette.slate700} />
           </Pressable>
-        </View>
+        </Pressable>
 
         <View style={[styles.searchSticky, { backgroundColor: stickyBg }]}>
           <View style={[styles.searchBox, { backgroundColor: inputBg }]}>
@@ -293,7 +334,7 @@ export function ClienteRestaurantesScreen({ navigation }: Props): React.JSX.Elem
             return (
               <Pressable
                 key={c.key}
-                onPress={() => setCatSelecionada(c.key)}
+                onPress={() => onSelectCategoria(c.key)}
                 style={styles.catItem}
               >
                 <View
@@ -317,10 +358,7 @@ export function ClienteRestaurantesScreen({ navigation }: Props): React.JSX.Elem
           <Text style={[styles.blockTitle, { color: text }]}>Destaques</Text>
           <Pressable
             hitSlop={8}
-            onPress={() => {
-              setCatSelecionada('all');
-              setSearchQuery('');
-            }}
+            onPress={() => onSelectCategoria('all')}
           >
             <Text style={styles.verTodos}>Ver todos</Text>
           </Pressable>
@@ -358,6 +396,8 @@ export function ClienteRestaurantesScreen({ navigation }: Props): React.JSX.Elem
       destaqueItems,
       renderDestaque,
       enderecoEntrega,
+      navigation,
+      onSelectCategoria,
     ]
   );
 
