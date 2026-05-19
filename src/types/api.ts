@@ -29,7 +29,9 @@ export interface RestauranteResponseDTO {
   telefone: string;
   email: string;
   status: StatusRestaurante;
+  ativo?: boolean;
   raioEntregaKm: number | null;
+  fotoUrl: string | null;
   distanciaKm?: number | null;
   tempoEstimadoMinutos?: number | null;
   mediaAvaliacao?: number | null;
@@ -130,6 +132,43 @@ export interface EntregadorResponseDTO {
   disponibilidade: DisponibilidadeEntregador;
   latitude: number;
   longitude: number;
+  criadoEm: string;
+  atualizadoEm: string;
+}
+export interface CarrinhoItemRequestDTO {
+  pratoId: number;
+  quantidade: number;
+}
+
+export interface AplicarCupomRequestDTO {
+  codigo: string;
+}
+
+export interface CupomInfoDTO {
+  id: number;
+  codigo: string;
+  tipoDesconto: string;
+  valorDesconto: number;
+}
+
+export interface CarrinhoItemResponseDTO {
+  id: number;
+  pratoId: number;
+  pratoNome: string;
+  pratoFotoUrl?: string | null;
+  quantidade: number;
+  precoUnitario: number;
+  subtotal: number;
+}
+
+export interface CarrinhoResponseDTO {
+  id: number;
+  clienteId: number;
+  itens: CarrinhoItemResponseDTO[];
+  cupom: CupomInfoDTO | null;
+  subtotal: number;
+  desconto: number;
+  total: number;
   criadoEm: string;
   atualizadoEm: string;
 }
