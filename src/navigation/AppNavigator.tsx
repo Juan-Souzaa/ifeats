@@ -330,3 +330,57 @@ function AuthenticatedRoot(): React.JSX.Element {
     );
 
   return <CartProvider>{body}</CartProvider>;
+}
+
+export function AppNavigator(): React.JSX.Element {
+  const scheme = useColorScheme();
+  const { token, isReady } = useAuth();
+  const dark = scheme === 'dark';
+
+  if (!isReady) {
+    return <></>;
+  }
+
+  const navTheme = dark
+    ? {
+        ...DarkTheme,
+        colors: {
+          ...DarkTheme.colors,
+          primary: palette.primary,
+          background: palette.backgroundDark,
+          card: palette.slate800,
+          text: palette.slate100,
+          border: palette.slate700,
+        },
+      }
+    : {
+        ...DefaultTheme,
+        colors: {
+          ...DefaultTheme.colors,
+          primary: palette.primary,
+          background: palette.backgroundLight,
+          card: palette.white,
+          text: palette.slate900,
+          border: palette.slate200,
+        },
+      };
+
+  return (
+    <NavigationContainer theme={navTheme}>
+      {!token ? (
+        <GuestStack.Navigator
+          key="guest"
+          initialRouteName="Login"
+          screenOptions={{ headerShown: false, animation: 'slide_from_right' }}
+        >
+          <GuestStack.Screen name="Login" component={LoginScreen} />
+          <GuestStack.Screen name="RestauranteCadastro" component={RestauranteCadastroScreen} />
+          <GuestStack.Screen name="ClienteCadastro" component={ClienteCadastroScreen} />
+          <GuestStack.Screen name="EntregadorCadastro" component={EntregadorCadastroScreen} />
+        </GuestStack.Navigator>
+      ) : (
+        <AuthenticatedRoot key="auth" />
+      )}
+    </NavigationContainer>
+  );
+}
