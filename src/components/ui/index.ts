@@ -8,6 +8,7 @@ export { SkeletonList } from './SkeletonList';
 export { MoneyText } from './MoneyText';
 export { StepIndicator } from './StepIndicator';
 export { ErrorBanner } from './ErrorBanner';
+export { PedidoTimeline } from './PedidoTimeline';
 export { useThemeColors } from './useThemeColors';
 export { HubMenuRow, HubSectionTitle } from './HubMenuRow';
 export { FormField } from './FormField';
