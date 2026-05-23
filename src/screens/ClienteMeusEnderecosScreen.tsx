@@ -1,79 +1,121 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useCallback } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, useColorScheme, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
+import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import type { ClienteStackParamList } from '../navigation/types';
-import { useClienteMeViewModel } from '../hooks/useClienteMeViewModel';
+import { useClienteEnderecosViewModel } from '../hooks/useClienteEnderecosViewModel';
+import {
+  Card,
+  EmptyState,
+  ErrorBanner,
+  PrimaryButton,
+  ScreenShell,
+  SecondaryButton,
+  SkeletonList,
+  useThemeColors,
+} from '../components/ui';
 import { palette } from '../theme/colors';
+import { spacing } from '../theme/spacing';
 
 type Props = NativeStackScreenProps<ClienteStackParamList, 'ClienteMeusEnderecos'>;
 
 export function ClienteMeusEnderecosScreen({ navigation }: Props): React.JSX.Element {
-  const dark = useColorScheme() === 'dark';
-  const bg = dark ? palette.backgroundDark : palette.backgroundLight;
-  const text = dark ? palette.slate100 : palette.slate900;
-  const sub = dark ? palette.slate400 : palette.slate500;
-  const card = dark ? '#1e293b' : palette.white;
-
-  const me = useClienteMeViewModel();
-
-  useFocusEffect(
-    useCallback(() => {
-      void me.refresh();
-    }, [me.refresh])
-  );
-
-  const endereco = me.data?.endereco?.trim();
+  const c = useThemeColors();
+  const vm = useClienteEnderecosViewModel();
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: bg }]} edges={['top', 'bottom']}>
-      <View style={styles.topBar}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={12}>
-          <MaterialIcons name="arrow-back" size={24} color={text} />
+    <ScreenShell
+      title="Meus endereços"
+      onBack={() => navigation.goBack()}
+      scroll={false}
+      rightAction={
+        <Pressable onPress={() => navigation.navigate('ClienteEnderecoForm', {})} hitSlop={12}>
+          <MaterialIcons name="add" size={26} color={palette.primary} />
         </Pressable>
-        <Text style={[styles.topTitle, { color: text }]}>Meus endereços</Text>
-        <View style={{ width: 24 }} />
-      </View>
-
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <View style={[styles.card, { backgroundColor: card, borderColor: dark ? palette.slate700 : palette.slate200 }]}>
-          <View style={styles.cardHead}>
-            <MaterialIcons name="home" size={22} color={palette.primary} />
-            <Text style={[styles.cardTitle, { color: text }]}>Endereço principal</Text>
-          </View>
-          {endereco ? (
-            <Text style={[styles.endereco, { color: text }]}>{endereco}</Text>
-          ) : (
-            <Text style={[styles.hint, { color: sub }]}>
-              Nenhum endereço cadastrado ainda. Use o cadastro ou fale com o suporte para atualizar.
-            </Text>
+      }
+    >
+      {vm.error ? <ErrorBanner message={vm.error} onRetry={() => void vm.refresh()} /> : null}
+      {vm.loading ? (
+        <SkeletonList />
+      ) : (
+        <FlatList
+          data={vm.enderecos}
+          keyExtractor={(e) => String(e.id)}
+          contentContainerStyle={vm.enderecos.length === 0 ? styles.empty : styles.list}
+          ListEmptyComponent={
+            <EmptyState
+              icon="place"
+              title="Nenhum endereço"
+              subtitle="Adicione um endereço para facilitar seus pedidos."
+            />
+          }
+          ListFooterComponent={
+            vm.enderecos.length > 0 ? (
+              <View style={{ marginTop: spacing.md }}>
+                <PrimaryButton
+                  label="Adicionar endereço"
+                  onPress={() => navigation.navigate('ClienteEnderecoForm', {})}
+                />
+              </View>
+            ) : (
+              <PrimaryButton
+                label="Adicionar endereço"
+                onPress={() => navigation.navigate('ClienteEnderecoForm', {})}
+              />
+            )
+          }
+          renderItem={({ item }) => (
+            <Card style={styles.card}>
+              {item.principal ? (
+                <View style={[styles.badge, { backgroundColor: c.successBg }]}>
+                  <Text style={{ color: c.success, fontSize: 11, fontWeight: '700' }}>Principal</Text>
+                </View>
+              ) : null}
+              <Text style={[styles.addr, { color: c.text }]}>
+                {item.logradouro}, {item.numero}
+                {item.complemento ? ` — ${item.complemento}` : ''}
+              </Text>
+              <Text style={{ color: c.sub, fontSize: 13 }}>
+                {item.bairro} · {item.cidade}/{item.estado} · CEP {item.cep}
+              </Text>
+              <View style={styles.actions}>
+                {!item.principal ? (
+                  <SecondaryButton
+                    label="Tornar principal"
+                    onPress={() => void vm.tornarPrincipal(item.id)}
+                    disabled={vm.busyId != null}
+                  />
+                ) : null}
+                <SecondaryButton
+                  label="Editar"
+                  onPress={() => navigation.navigate('ClienteEnderecoForm', { enderecoId: item.id })}
+                />
+                <Pressable
+                  onPress={() =>
+                    Alert.alert('Excluir endereço', 'Deseja remover este endereço?', [
+                      { text: 'Cancelar', style: 'cancel' },
+                      { text: 'Excluir', style: 'destructive', onPress: () => void vm.excluir(item.id) },
+                    ])
+                  }
+                  hitSlop={8}
+                  style={styles.deleteBtn}
+                >
+                  <MaterialIcons name="delete-outline" size={22} color={c.error} />
+                </Pressable>
+              </View>
+            </Card>
           )}
-          {me.data?.telefone ? (
-            <Text style={[styles.tel, { color: sub }]}>Telefone: {me.data.telefone}</Text>
-          ) : null}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        />
+      )}
+    </ScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  topTitle: { fontSize: 17, fontWeight: '700' },
-  scroll: { padding: 16, paddingBottom: 40 },
-  card: { borderRadius: 16, padding: 18, borderWidth: 1 },
-  cardHead: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
-  cardTitle: { fontSize: 17, fontWeight: '800' },
-  endereco: { fontSize: 15, lineHeight: 22 },
-  hint: { fontSize: 14, lineHeight: 20 },
-  tel: { marginTop: 14, fontSize: 14 },
+  empty: { flexGrow: 1, padding: spacing.lg },
+  list: { paddingBottom: spacing.xl },
+  card: { marginBottom: spacing.md },
+  badge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, marginBottom: spacing.sm },
+  addr: { fontSize: 15, fontWeight: '700', marginBottom: 4 },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.md, alignItems: 'center' },
+  deleteBtn: { marginLeft: 'auto', padding: 4 },
 });

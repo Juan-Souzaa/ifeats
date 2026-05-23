@@ -74,6 +74,14 @@ export function ClientePerfilScreen({ navigation }: Props): React.JSX.Element {
 
           <View style={styles.menu}>
             <MenuRow
+              icon="edit"
+              label="Editar perfil"
+              onPress={() => navigation.navigate('ClienteEditarPerfil')}
+              dark={dark}
+              card={card}
+              text={text}
+            />
+            <MenuRow
               icon="place"
               label="Meus endereços"
               onPress={() => navigation.navigate('ClienteMeusEnderecos')}

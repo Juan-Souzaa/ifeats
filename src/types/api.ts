@@ -135,6 +135,20 @@ export interface EntregadorResponseDTO {
   criadoEm: string;
   atualizadoEm: string;
 }
+export interface EnderecoResponseDTO {
+  id: number;
+  logradouro: string;
+  numero: string;
+  complemento: string | null;
+  bairro: string;
+  cidade: string;
+  estado: string;
+  cep: string;
+  latitude: number | null;
+  longitude: number | null;
+  principal: boolean | null;
+  criadoEm: string;
+}
 export interface CarrinhoItemRequestDTO {
   pratoId: number;
   quantidade: number;
@@ -183,4 +197,11 @@ export interface RestauranteBuscaDTO {
   fotoUrl: string | null;
   mediaAvaliacao: number | null;
   totalAvaliacoes: number | null;
+}
+export interface EnderecoCepResponseDTO {
+  cep: string;
+  logradouro: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
 }
