@@ -81,3 +81,16 @@ export function formatStatusPagamento(status: StatusPagamento): string {
 }
 export function resumoItensPedido(
   itens: { quantidade: number; pratoNome: string }[] | undefined,
+): string {
+  if (!itens?.length) return 'Sem itens';
+  const partes = itens.slice(0, max).map((i) => `${i.quantidade}x ${i.pratoNome}`);
+  const restante = itens.length - max;
+  return restante > 0 ? `${partes.join(', ')} +${restante}` : partes.join(', ');
+}
+
+export function contagemItensPedido(itens: { quantidade: number }[] | undefined): number {
+  return itens?.reduce((acc, i) => acc + i.quantidade, 0) ?? 0;
+}
+
+
+
