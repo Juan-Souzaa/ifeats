@@ -308,6 +308,46 @@ export interface RestauranteBuscaDTO {
   mediaAvaliacao: number | null;
   totalAvaliacoes: number | null;
 }
+export interface GanhosRestauranteDTO {
+  valorBruto: number;
+  taxaPlataforma: number;
+  percentualTaxa: number;
+  valorLiquido: number;
+  totalPedidos: number;
+  periodo: string;
+}
+
+export interface GanhosEntregadorDTO {
+  valorBruto: number;
+  taxaPlataforma: number;
+  percentualTaxa: number;
+  valorLiquido: number;
+  totalEntregas: number;
+  periodo: string;
+}
+
+export interface GanhosPorEntregaDTO {
+  pedidoId: number;
+  taxaEntrega: number;
+  taxaPlataforma: number;
+  valorLiquido: number;
+  dataEntrega: string;
+}
+export interface AvaliacaoResumoEntregadorDTO {
+  mediaNotaEntregador: number;
+  totalAvaliacoesEntregador: number;
+}
+
+export interface AvaliacaoEntregadorResponseDTO {
+  id: number;
+  pedidoId: number;
+  clienteId: number;
+  entregadorId: number;
+  notaEntregador: number;
+  comentarioEntregador: string | null;
+  criadoEm: string;
+  atualizadoEm: string;
+}
 export interface EnderecoCepResponseDTO {
   cep: string;
   logradouro: string;

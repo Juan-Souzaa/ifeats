@@ -64,3 +64,38 @@ export type ClienteTabParamList = {
 export type ClienteStackParamList = ClienteHomeStackParamList &
   ClientePedidosStackParamList &
   ClienteCarrinhoStackParamList;
+
+export type AdminStackParamList = {
+  AdminHome: undefined;
+  AdminCriar: undefined;
+  AdminCupons: undefined;
+  AdminRelatorios: undefined;
+  AdminRestaurantes: undefined;
+  AdminEntregadores: undefined;
+  AdminClientes: undefined;
+  AdminRestaurantesPendentes: undefined;
+  AdminEntregadoresPendentes: undefined;
+  AdminPedidosAndamento: undefined;
+  AdminPedidoDetalhe: { pedidoId: number };
+  AdminReembolso: undefined;
+  AdminTaxas: undefined;
+  AdminTickets: undefined;
+  AdminTicketDetalhe: { ticketId: number };
+};
+
+export type EntregadorPedidoModo = 'disponivel' | 'ativa' | 'historico';
+
+export type EntregadorStackParamList = {
+  EntregadorHome: undefined;
+  EntregadorArea: undefined;
+  EntregadorPedidoDetalhe: { pedidoId: number; modo: EntregadorPedidoModo };
+  EntregadorPerfil: undefined;
+  EntregadorGanhos: undefined;
+};
+
+export type MainTabParamList = {
+  TabCliente: undefined;
+  TabRestaurante: undefined;
+  TabAdmin: undefined;
+  TabEntregador: undefined;
+};
