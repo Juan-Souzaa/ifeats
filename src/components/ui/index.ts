@@ -6,6 +6,7 @@ export { StatusChip } from './StatusChip';
 export { EmptyState } from './EmptyState';
 export { SkeletonList } from './SkeletonList';
 export { MoneyText } from './MoneyText';
+export { StarRatingInput } from './StarRatingInput';
 export { StepIndicator } from './StepIndicator';
 export { ErrorBanner } from './ErrorBanner';
 export { PedidoTimeline } from './PedidoTimeline';
