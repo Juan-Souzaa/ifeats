@@ -1,49 +1,79 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import type { ClienteStackParamList } from '../navigation/types';
+import { useClienteTicketsViewModel } from '../hooks/useClienteTicketsViewModel';
+import {
+  Card,
+  EmptyState,
+  ErrorBanner,
+  ScreenShell,
+  SkeletonList,
+  TicketStatusChip,
+  useThemeColors,
+} from '../components/ui';
+import { formatTipoTicket } from '../utils/ticketStatus';
 import { palette } from '../theme/colors';
+import { spacing } from '../theme/spacing';
 
 type Props = NativeStackScreenProps<ClienteStackParamList, 'ClienteTickets'>;
 
 export function ClienteTicketsScreen({ navigation }: Props): React.JSX.Element {
-  const dark = useColorScheme() === 'dark';
-  const bg = dark ? palette.backgroundDark : palette.backgroundLight;
-  const text = dark ? palette.slate100 : palette.slate900;
-  const sub = dark ? palette.slate400 : palette.slate500;
+  const c = useThemeColors();
+  const vm = useClienteTicketsViewModel();
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: bg }]} edges={['top', 'bottom']}>
-      <View style={styles.topBar}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={12}>
-          <MaterialIcons name="arrow-back" size={24} color={text} />
+    <ScreenShell
+      title="Tickets de suporte"
+      onBack={() => navigation.goBack()}
+      scroll={false}
+      rightAction={
+        <Pressable onPress={() => navigation.navigate('ClienteTicketCriar')} hitSlop={12}>
+          <MaterialIcons name="add" size={26} color={palette.primary} />
         </Pressable>
-        <Text style={[styles.topTitle, { color: text }]}>Tickets de suporte</Text>
-        <View style={{ width: 24 }} />
-      </View>
-      <View style={styles.body}>
-        <MaterialIcons name="support-agent" size={48} color={palette.primary} style={{ opacity: 0.85 }} />
-        <Text style={[styles.title, { color: text }]}>Em breve</Text>
-        <Text style={[styles.sub, { color: sub }]}>
-          Acompanhe chamados e conversas com o suporte nesta área numa próxima versão.
-        </Text>
-      </View>
-    </SafeAreaView>
+      }
+    >
+      {vm.error ? <ErrorBanner message={vm.error} onRetry={() => void vm.refresh()} /> : null}
+      {vm.loading ? (
+        <SkeletonList />
+      ) : (
+        <FlatList
+          data={vm.tickets}
+          keyExtractor={(t) => String(t.id)}
+          contentContainerStyle={vm.tickets.length === 0 ? styles.empty : styles.list}
+          ListEmptyComponent={
+            <EmptyState
+              icon="support-agent"
+              title="Nenhum ticket"
+              subtitle="Abra um chamado se precisar de ajuda."
+            />
+          }
+          renderItem={({ item }) => (
+            <Pressable onPress={() => navigation.navigate('ClienteTicketDetalhe', { ticketId: item.id })}>
+              <Card style={styles.card}>
+                <View style={styles.row}>
+                  <Text style={[styles.title, { color: c.text }]} numberOfLines={1}>
+                    {item.titulo}
+                  </Text>
+                  <TicketStatusChip status={item.status} />
+                </View>
+                <Text style={{ color: c.sub, fontSize: 13 }}>{formatTipoTicket(item.tipo)}</Text>
+                <Text style={{ color: c.muted, fontSize: 12, marginTop: spacing.xs }}>
+                  {new Date(item.criadoEm).toLocaleString('pt-BR')}
+                </Text>
+              </Card>
+            </Pressable>
+          )}
+        />
+      )}
+    </ScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  topTitle: { fontSize: 17, fontWeight: '700' },
-  body: { flex: 1, padding: 24, justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 20, fontWeight: '800', marginTop: 16, textAlign: 'center' },
-  sub: { marginTop: 10, fontSize: 15, lineHeight: 22, textAlign: 'center' },
+  empty: { flexGrow: 1 },
+  list: { paddingBottom: spacing.xl },
+  card: { marginBottom: spacing.md },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: spacing.sm },
+  title: { fontSize: 16, fontWeight: '700', flex: 1 },
 });

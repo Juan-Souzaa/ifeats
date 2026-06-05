@@ -10,6 +10,7 @@ export { StarRatingInput } from './StarRatingInput';
 export { StepIndicator } from './StepIndicator';
 export { ErrorBanner } from './ErrorBanner';
 export { PedidoTimeline } from './PedidoTimeline';
+export { TicketStatusChip } from './TicketStatusChip';
 export { useThemeColors } from './useThemeColors';
 export { HubMenuRow, HubSectionTitle } from './HubMenuRow';
 export { FormField } from './FormField';
