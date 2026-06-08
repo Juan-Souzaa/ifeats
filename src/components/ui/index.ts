@@ -15,3 +15,5 @@ export { useThemeColors } from './useThemeColors';
 export { HubMenuRow, HubSectionTitle } from './HubMenuRow';
 export { FormField } from './FormField';
 export { LabeledInput } from './LabeledInput';
+export { DateField } from './DateField';
+export { BarChart, type BarChartItem } from './BarChart';

@@ -296,6 +296,29 @@ export interface PagamentoResponseDTO {
   criadoEm: string;
   atualizadoEm: string;
 }
+export interface CupomRequestDTO {
+  codigo: string;
+  tipoDesconto: TipoDesconto;
+  valorDesconto: number;
+  valorMinimo: number;
+  dataInicio: string;
+  dataFim: string;
+  usosMaximos: number;
+}
+
+export interface CupomResponseDTO {
+  id: number;
+  codigo: string;
+  tipoDesconto: TipoDesconto;
+  valorDesconto: number;
+  valorMinimo: number;
+  dataInicio: string;
+  dataFim: string;
+  ativo: boolean;
+  usosMaximos: number;
+  usosAtuais: number;
+  criadoEm: string;
+}
 export interface AvaliacaoRequestDTO {
   notaRestaurante: number;
   notaEntregador?: number | null;
@@ -324,6 +347,31 @@ export interface AvaliacaoResponseDTO {
 export interface AvaliacaoResumoDTO {
   mediaNotaRestaurante: number;
   totalAvaliacoesRestaurante: number;
+}
+export interface RelatorioDistribuicaoDTO {
+  volumeTotal: number;
+  distribuicaoRestaurantes: number;
+  distribuicaoEntregadores: number;
+  distribuicaoPlataforma: number;
+  periodo: string;
+  tendencia: string;
+}
+
+export interface RelatorioCompletoDTO {
+  totalVendas: number;
+  totalPedidos: number;
+  ticketMedio: number;
+  taxaEntregaMedia: number;
+  distribuicaoRestaurantes: number;
+  distribuicaoEntregadores: number;
+  taxaPlataforma: number;
+  totalClientes: number;
+  qtdRestaurantes: number;
+  qtdEntregadores: number;
+  pedidosPorCliente: number;
+  taxaConversao: number;
+  periodo: string;
+  tendencia: string;
 }
 export interface RestauranteBuscaDTO {
   id: number;
