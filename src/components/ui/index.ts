@@ -3,6 +3,7 @@ export { PrimaryButton } from './PrimaryButton';
 export { SecondaryButton } from './SecondaryButton';
 export { Card } from './Card';
 export { StatusChip } from './StatusChip';
+export { ModeracaoStatusChip } from './ModeracaoStatusChip';
 export { EmptyState } from './EmptyState';
 export { SkeletonList } from './SkeletonList';
 export { MoneyText } from './MoneyText';
