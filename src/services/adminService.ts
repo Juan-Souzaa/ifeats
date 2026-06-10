@@ -26,20 +26,20 @@ export async function listarAdmins(): Promise<AdminResponseDTO[]> {
 
 }
 
-  return data.content ?? [];
-
-
-
-}
-
-
-
 export async function listarPedidosEmAndamento(
-
-
 
   page = 0,
 
-
-
   size = 30
+
+): Promise<SpringPage<PedidoResponseDTO>> {
+
+  const { data } = await api.get<SpringPage<PedidoResponseDTO>>('/api/admin/pedidos/andamento', {
+
+    params: { page, size },
+
+  });
+
+  return data;
+
+}

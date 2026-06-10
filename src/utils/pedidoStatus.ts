@@ -51,6 +51,7 @@ export function timelineIndex(status: StatusPedido): number {
   const i = PEDIDO_TIMELINE.indexOf(status);
   return i >= 0 ? i : 0;
 }
+export function formatMetodoPagamento(metodo: MetodoPagamento): string {
   switch (metodo) {
     case 'PIX':
       return 'PIX';
@@ -63,6 +64,7 @@ export function timelineIndex(status: StatusPedido): number {
   }
 }
 export function formatStatusPagamento(status: StatusPagamento): string {
+  switch (status) {
     case 'PENDING':
       return 'Pendente';
     case 'AUTHORIZED':
@@ -81,6 +83,7 @@ export function formatStatusPagamento(status: StatusPagamento): string {
 }
 export function resumoItensPedido(
   itens: { quantidade: number; pratoNome: string }[] | undefined,
+  max = 2
 ): string {
   if (!itens?.length) return 'Sem itens';
   const partes = itens.slice(0, max).map((i) => `${i.quantidade}x ${i.pratoNome}`);
@@ -91,6 +94,3 @@ export function resumoItensPedido(
 export function contagemItensPedido(itens: { quantidade: number }[] | undefined): number {
   return itens?.reduce((acc, i) => acc + i.quantidade, 0) ?? 0;
 }
-
-
-

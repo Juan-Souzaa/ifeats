@@ -135,6 +135,7 @@ export interface EntregadorResponseDTO {
   criadoEm: string;
   atualizadoEm: string;
 }
+
 export type StatusPedido =
   | 'CREATED'
   | 'CONFIRMED'
@@ -156,6 +157,7 @@ export type StatusPagamento =
 export type TipoDesconto = 'PERCENTUAL' | 'VALOR_FIXO';
 
 export type PeriodoRelatorio = 'HOJE' | 'SEMANA' | 'MES' | 'CUSTOMIZADO';
+
 export interface EnderecoResponseDTO {
   id: number;
   logradouro: string;
@@ -170,6 +172,7 @@ export interface EnderecoResponseDTO {
   principal: boolean | null;
   criadoEm: string;
 }
+
 export interface CarrinhoItemRequestDTO {
   pratoId: number;
   quantidade: number;
@@ -207,6 +210,7 @@ export interface CarrinhoResponseDTO {
   criadoEm: string;
   atualizadoEm: string;
 }
+
 export interface PedidoItemRequestDTO {
   pratoId: number;
   quantidade: number;
@@ -275,6 +279,7 @@ export interface PedidoResponseDTO {
   criadoEm: string;
   rastreamento?: RastreamentoDTO | null;
 }
+
 export interface CartaoCreditoRequestDTO {
   numero: string;
   nomeTitular: string;
@@ -296,6 +301,7 @@ export interface PagamentoResponseDTO {
   criadoEm: string;
   atualizadoEm: string;
 }
+
 export interface CupomRequestDTO {
   codigo: string;
   tipoDesconto: TipoDesconto;
@@ -319,6 +325,7 @@ export interface CupomResponseDTO {
   usosAtuais: number;
   criadoEm: string;
 }
+
 export interface AvaliacaoRequestDTO {
   notaRestaurante: number;
   notaEntregador?: number | null;
@@ -348,6 +355,7 @@ export interface AvaliacaoResumoDTO {
   mediaNotaRestaurante: number;
   totalAvaliacoesRestaurante: number;
 }
+
 export interface RelatorioDistribuicaoDTO {
   volumeTotal: number;
   distribuicaoRestaurantes: number;
@@ -373,6 +381,38 @@ export interface RelatorioCompletoDTO {
   periodo: string;
   tendencia: string;
 }
+
+export interface AtualizarClienteRequestDTO {
+  nome: string;
+  email: string;
+  telefone: string;
+}
+
+export interface AtualizarRestauranteRequestDTO {
+  nome: string;
+  telefone: string;
+  email: string;
+  raioEntregaKm?: number;
+}
+
+export interface AtualizarRaioEntregaRequestDTO {
+  raioEntregaKm: number;
+}
+
+export interface AtualizarEntregadorRequestDTO {
+  nome?: string;
+  telefone?: string;
+  email?: string;
+  tipoVeiculo?: TipoVeiculo;
+  placaVeiculo?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
+export interface ReembolsoRequestDTO {
+  motivo: string;
+}
+
 export interface RestauranteBuscaDTO {
   id: number;
   nome: string;
@@ -385,6 +425,7 @@ export interface RestauranteBuscaDTO {
   mediaAvaliacao: number | null;
   totalAvaliacoes: number | null;
 }
+
 export type TipoTicket = 'RECLAMACAO' | 'SUPORTE_TECNICO' | 'SUGESTAO';
 
 export type StatusTicket = 'ABERTO' | 'EM_ANDAMENTO' | 'RESOLVIDO' | 'FECHADO';
@@ -433,6 +474,7 @@ export interface TicketDetalhadoResponseDTO {
   ticket: TicketResponseDTO;
   comentarios: TicketComentarioResponseDTO[];
 }
+
 export interface GanhosRestauranteDTO {
   valorBruto: number;
   taxaPlataforma: number;
@@ -458,6 +500,23 @@ export interface GanhosPorEntregaDTO {
   valorLiquido: number;
   dataEntrega: string;
 }
+
+export type TipoTaxa = 'TAXA_RESTAURANTE' | 'TAXA_ENTREGADOR';
+
+export interface ConfiguracaoTaxaRequestDTO {
+  tipoTaxa: TipoTaxa;
+  percentual: number;
+}
+
+export interface ConfiguracaoTaxaResponseDTO {
+  id: number;
+  tipoTaxa: TipoTaxa;
+  percentual: number;
+  ativo: boolean;
+  criadoEm: string;
+  atualizadoEm: string;
+}
+
 export interface AvaliacaoRestauranteResponseDTO {
   id: number;
   pedidoId: number;
@@ -470,6 +529,7 @@ export interface AvaliacaoRestauranteResponseDTO {
   criadoEm: string;
   atualizadoEm: string;
 }
+
 export interface AvaliacaoResumoEntregadorDTO {
   mediaNotaEntregador: number;
   totalAvaliacoesEntregador: number;
@@ -485,6 +545,7 @@ export interface AvaliacaoEntregadorResponseDTO {
   criadoEm: string;
   atualizadoEm: string;
 }
+
 export interface EnderecoCepResponseDTO {
   cep: string;
   logradouro: string;

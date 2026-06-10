@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import type { GuestStackParamList } from '../navigation/types';
+import { EnderecoFormFields } from '../components/EnderecoFormFields';
 import { useClienteCadastroViewModel } from '../hooks/useClienteCadastroViewModel';
 import { palette } from '../theme/colors';
 
@@ -60,76 +61,21 @@ export function ClienteCadastroScreen({ navigation }: Props): React.JSX.Element 
             sub={sub}
           />
           <Text style={[styles.section, { color: text }]}>Endereço</Text>
-          <View style={styles.cepRow}>
-            <View style={{ flex: 1 }}>
-              <Field
-                label="CEP"
-                value={vm.endereco.cep}
-                onChangeText={(t) => vm.setEnderecoField('cep', t)}
-                keyboardType="number-pad"
-                borderColor={border}
-                color={text}
-                sub={sub}
-                maxLength={9}
-              />
-            </View>
-            {vm.cepBuscando ? (
-              <ActivityIndicator style={{ marginTop: 22, marginLeft: 8 }} color={palette.primary} />
-            ) : null}
-          </View>
-          {vm.cepAviso ? <Text style={styles.cepHint}>{vm.cepAviso}</Text> : null}
-          <Text style={[styles.cepHelp, { color: sub }]}>
-            Ao completar o CEP, o endereço pode ser preenchido automaticamente.
-          </Text>
-          <Field
-            label="Logradouro"
-            value={vm.endereco.logradouro}
-            onChangeText={(t) => vm.setEnderecoField('logradouro', t)}
+          <EnderecoFormFields
+            endereco={vm.endereco}
+            onChange={(field, value) => {
+              if (field === 'principal') return;
+              if (field === 'estado') {
+                vm.setEnderecoField('estado', value.toUpperCase().slice(0, 2));
+              } else {
+                vm.setEnderecoField(field, value);
+              }
+            }}
+            cepBuscando={vm.cepBuscando}
+            cepAviso={vm.cepAviso}
             borderColor={border}
-            color={text}
-            sub={sub}
-          />
-          <Field
-            label="Número"
-            value={vm.endereco.numero}
-            onChangeText={(t) => vm.setEnderecoField('numero', t)}
-            borderColor={border}
-            color={text}
-            sub={sub}
-          />
-          <Field
-            label="Complemento (opcional)"
-            value={vm.endereco.complemento}
-            onChangeText={(t) => vm.setEnderecoField('complemento', t)}
-            borderColor={border}
-            color={text}
-            sub={sub}
-          />
-          <Field
-            label="Bairro"
-            value={vm.endereco.bairro}
-            onChangeText={(t) => vm.setEnderecoField('bairro', t)}
-            borderColor={border}
-            color={text}
-            sub={sub}
-          />
-          <Field
-            label="Cidade"
-            value={vm.endereco.cidade}
-            onChangeText={(t) => vm.setEnderecoField('cidade', t)}
-            borderColor={border}
-            color={text}
-            sub={sub}
-          />
-          <Field
-            label="Estado (UF, 2 letras)"
-            value={vm.endereco.estado}
-            onChangeText={(t) => vm.setEnderecoField('estado', t.toUpperCase().slice(0, 2))}
-            autoCapitalize="characters"
-            maxLength={2}
-            borderColor={border}
-            color={text}
-            sub={sub}
+            textColor={text}
+            subColor={sub}
           />
           {vm.error ? <Text style={styles.error}>{vm.error}</Text> : null}
           {vm.successMessage ? <Text style={styles.ok}>{vm.successMessage}</Text> : null}
@@ -202,9 +148,6 @@ const styles = StyleSheet.create({
   input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, height: 44, fontSize: 15 },
   error: { color: '#b91c1c', marginTop: 8 },
   ok: { color: '#15803d', marginTop: 8, fontWeight: '600' },
-  cepRow: { flexDirection: 'row', alignItems: 'flex-start' },
-  cepHint: { color: '#b45309', fontSize: 13, marginTop: -4, marginBottom: 4 },
-  cepHelp: { fontSize: 12, marginBottom: 8, lineHeight: 16 },
   btn: {
     marginTop: 16,
     backgroundColor: palette.primary,
