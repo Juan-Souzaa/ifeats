@@ -1,7 +1,7 @@
 ﻿import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useColorScheme, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, useColorScheme, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
@@ -338,7 +338,11 @@ export function AppNavigator(): React.JSX.Element {
   const dark = scheme === 'dark';
 
   if (!isReady) {
-    return <></>;
+    return (
+      <View style={[styles.boot, { backgroundColor: dark ? palette.backgroundDark : palette.backgroundLight }]}>
+        <ActivityIndicator size="large" color={palette.primary} />
+      </View>
+    );
   }
 
   const navTheme = dark
@@ -384,3 +388,7 @@ export function AppNavigator(): React.JSX.Element {
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  boot: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+});
