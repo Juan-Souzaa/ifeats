@@ -1,394 +1,223 @@
-﻿import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { ActivityIndicator, useColorScheme, Pressable, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useAuth } from '../context/AuthContext';
-import { CartProvider, useCart } from '../context/CartContext';
-import { palette } from '../theme/colors';
-import type {
-  AdminStackParamList,
-  ClienteCarrinhoStackParamList,
-  ClienteHomeStackParamList,
-  ClientePedidosStackParamList,
-  ClienteTabParamList,
-  EntregadorStackParamList,
-  GuestStackParamList,
-  MainTabParamList,
-  RestauranteStackParamList,
-} from './types';
-import { LoginScreen } from '../screens/LoginScreen';
-import { RestauranteCadastroScreen } from '../screens/RestauranteCadastroScreen';
-import { ClienteCadastroScreen } from '../screens/ClienteCadastroScreen';
-import { EntregadorCadastroScreen } from '../screens/EntregadorCadastroScreen';
-import { RestauranteHomeScreen } from '../screens/RestauranteHomeScreen';
-import { PratosListScreen } from '../screens/PratosListScreen';
-import { PratoCadastroScreen } from '../screens/PratoCadastroScreen';
-import { PratoEditarScreen } from '../screens/PratoEditarScreen';
-import { RestauranteCardapioScreen } from '../screens/RestauranteCardapioScreen';
-import { RestauranteAvaliacoesScreen } from '../screens/RestauranteAvaliacoesScreen';
-import { RestaurantePedidosScreen } from '../screens/RestaurantePedidosScreen';
-import { RestaurantePedidoDetalheScreen } from '../screens/RestaurantePedidoDetalheScreen';
-import { RestauranteEditarPerfilScreen } from '../screens/RestauranteEditarPerfilScreen';
-import { RestauranteRaioEntregaScreen } from '../screens/RestauranteRaioEntregaScreen';
-import { RestauranteGanhosScreen } from '../screens/RestauranteGanhosScreen';
-import { ClienteRestaurantesScreen } from '../screens/ClienteRestaurantesScreen';
-import { ClientePerfilScreen } from '../screens/ClientePerfilScreen';
-import { ClienteMeusEnderecosScreen } from '../screens/ClienteMeusEnderecosScreen';
-import { ClienteEnderecoFormScreen } from '../screens/ClienteEnderecoFormScreen';
-import { ClienteEditarPerfilScreen } from '../screens/ClienteEditarPerfilScreen';
-import { ClienteAlterarSenhaScreen } from '../screens/ClienteAlterarSenhaScreen';
-import { ClienteTicketsScreen } from '../screens/ClienteTicketsScreen';
-import { ClienteTicketCriarScreen } from '../screens/ClienteTicketCriarScreen';
-import { ClienteTicketDetalheScreen } from '../screens/ClienteTicketDetalheScreen';
-import { ClienteCarrinhoScreen } from '../screens/ClienteCarrinhoScreen';
-import { ClienteCheckoutScreen } from '../screens/ClienteCheckoutScreen';
-import { ClienteCheckoutConfirmacaoScreen } from '../screens/ClienteCheckoutConfirmacaoScreen';
-import { ClientePedidosScreen } from '../screens/ClientePedidosScreen';
-import { ClientePedidoDetalheScreen } from '../screens/ClientePedidoDetalheScreen';
-import { ClienteRastreamentoScreen } from '../screens/ClienteRastreamentoScreen';
-import { ClienteAvaliarPedidoScreen } from '../screens/ClienteAvaliarPedidoScreen';
-import { AdminHomeScreen } from '../screens/AdminHomeScreen';
-import { AdminCriarScreen } from '../screens/AdminCriarScreen';
-import { AdminCuponsScreen } from '../screens/AdminCuponsScreen';
-import { AdminRelatoriosScreen } from '../screens/AdminRelatoriosScreen';
-import { AdminRestaurantesScreen } from '../screens/AdminRestaurantesScreen';
-import { AdminEntregadoresScreen } from '../screens/AdminEntregadoresScreen';
-import { AdminClientesScreen } from '../screens/AdminClientesScreen';
-import { AdminRestaurantesPendentesScreen } from '../screens/AdminRestaurantesPendentesScreen';
-import { AdminEntregadoresPendentesScreen } from '../screens/AdminEntregadoresPendentesScreen';
-import { AdminPedidosAndamentoScreen } from '../screens/AdminPedidosAndamentoScreen';
-import { AdminPedidoDetalheScreen } from '../screens/AdminPedidoDetalheScreen';
-import { AdminReembolsoScreen } from '../screens/AdminReembolsoScreen';
-import { AdminTaxasScreen } from '../screens/AdminTaxasScreen';
-import { AdminTicketsScreen } from '../screens/AdminTicketsScreen';
-import { AdminTicketDetalheScreen } from '../screens/AdminTicketDetalheScreen';
-import { EntregadorHomeScreen } from '../screens/EntregadorHomeScreen';
-import { EntregadorAreaScreen } from '../screens/EntregadorAreaScreen';
-import { EntregadorPedidoDetalheScreen } from '../screens/EntregadorPedidoDetalheScreen';
-import { EntregadorPerfilScreen } from '../screens/EntregadorPerfilScreen';
-import { EntregadorGanhosScreen } from '../screens/EntregadorGanhosScreen';
-
-const GuestStack = createNativeStackNavigator<GuestStackParamList>();
-const RestauranteStack = createNativeStackNavigator<RestauranteStackParamList>();
-const ClienteHomeStack = createNativeStackNavigator<ClienteHomeStackParamList>();
-const ClienteCarrinhoStack = createNativeStackNavigator<ClienteCarrinhoStackParamList>();
-const ClientePedidosStack = createNativeStackNavigator<ClientePedidosStackParamList>();
-const ClienteTab = createBottomTabNavigator<ClienteTabParamList>();
-const AdminStack = createNativeStackNavigator<AdminStackParamList>();
-const EntregadorStack = createNativeStackNavigator<EntregadorStackParamList>();
-const Tab = createBottomTabNavigator<MainTabParamList>();
-
-function RestauranteStackNavigator(): React.JSX.Element {
-  return (
-    <RestauranteStack.Navigator screenOptions={{ headerShown: false }}>
-      <RestauranteStack.Screen name="RestauranteHome" component={RestauranteHomeScreen} />
-      <RestauranteStack.Screen name="PratosList" component={PratosListScreen} />
-      <RestauranteStack.Screen name="PratoCadastro" component={PratoCadastroScreen} />
-      <RestauranteStack.Screen name="PratoEditar" component={PratoEditarScreen} />
-      <RestauranteStack.Screen name="RestauranteCardapio" component={RestauranteCardapioScreen} />
-      <RestauranteStack.Screen name="RestauranteAvaliacoes" component={RestauranteAvaliacoesScreen} />
-      <RestauranteStack.Screen name="RestaurantePedidos" component={RestaurantePedidosScreen} />
-      <RestauranteStack.Screen name="RestaurantePedidoDetalhe" component={RestaurantePedidoDetalheScreen} />
-      <RestauranteStack.Screen name="RestauranteEditarPerfil" component={RestauranteEditarPerfilScreen} />
-      <RestauranteStack.Screen name="RestauranteRaioEntrega" component={RestauranteRaioEntregaScreen} />
-      <RestauranteStack.Screen name="RestauranteGanhos" component={RestauranteGanhosScreen} />
-    </RestauranteStack.Navigator>
-  );
-}
-
-function ClienteHomeStackNavigator(): React.JSX.Element {
-  return (
-    <ClienteHomeStack.Navigator screenOptions={{ headerShown: false }}>
-      <ClienteHomeStack.Screen name="ClienteRestaurantes" component={ClienteRestaurantesScreen} />
-      <ClienteHomeStack.Screen name="ClientePerfil" component={ClientePerfilScreen} />
-      <ClienteHomeStack.Screen name="ClienteMeusEnderecos" component={ClienteMeusEnderecosScreen} />
-      <ClienteHomeStack.Screen name="ClienteEnderecoForm" component={ClienteEnderecoFormScreen} />
-      <ClienteHomeStack.Screen name="ClienteEditarPerfil" component={ClienteEditarPerfilScreen} />
-      <ClienteHomeStack.Screen name="ClienteAlterarSenha" component={ClienteAlterarSenhaScreen} />
-      <ClienteHomeStack.Screen name="ClienteTickets" component={ClienteTicketsScreen} />
-      <ClienteHomeStack.Screen name="ClienteTicketCriar" component={ClienteTicketCriarScreen} />
-      <ClienteHomeStack.Screen name="ClienteTicketDetalhe" component={ClienteTicketDetalheScreen} />
-      <ClienteHomeStack.Screen name="RestauranteCardapio" component={RestauranteCardapioScreen} />
-      <ClienteHomeStack.Screen name="RestauranteAvaliacoes" component={RestauranteAvaliacoesScreen} />
-    </ClienteHomeStack.Navigator>
-  );
-}
-
-function ClienteCarrinhoStackNavigator(): React.JSX.Element {
-  return (
-    <ClienteCarrinhoStack.Navigator screenOptions={{ headerShown: false }}>
-      <ClienteCarrinhoStack.Screen name="ClienteCarrinho" component={ClienteCarrinhoScreen} />
-      <ClienteCarrinhoStack.Screen name="ClienteCheckout" component={ClienteCheckoutScreen} />
-      <ClienteCarrinhoStack.Screen
-        name="ClienteCheckoutConfirmacao"
-        component={ClienteCheckoutConfirmacaoScreen}
-      />
-    </ClienteCarrinhoStack.Navigator>
-  );
-}
-
-function ClientePedidosStackNavigator(): React.JSX.Element {
-  return (
-    <ClientePedidosStack.Navigator screenOptions={{ headerShown: false }}>
-      <ClientePedidosStack.Screen name="ClientePedidos" component={ClientePedidosScreen} />
-      <ClientePedidosStack.Screen name="ClientePedidoDetalhe" component={ClientePedidoDetalheScreen} />
-      <ClientePedidosStack.Screen name="ClienteRastreamento" component={ClienteRastreamentoScreen} />
-      <ClientePedidosStack.Screen name="ClienteAvaliarPedido" component={ClienteAvaliarPedidoScreen} />
-    </ClientePedidosStack.Navigator>
-  );
-}
-
-function CarrinhoTabIcon({ color, size }: { color: string; size: number }): React.JSX.Element {
-  const { itemCount } = useCart();
-  return (
-    <View>
-      <MaterialIcons name="shopping-cart" size={size} color={color} />
-      {itemCount > 0 ? (
-        <View style={tabIconStyles.badge}>
-          <Text style={tabIconStyles.badgeText}>{itemCount > 9 ? '9+' : itemCount}</Text>
-        </View>
-      ) : null}
-    </View>
-  );
-}
-
-function ClienteTabNavigator(): React.JSX.Element {
-  const dark = useColorScheme() === 'dark';
-  return (
-    <ClienteTab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: palette.primary,
-        tabBarInactiveTintColor: palette.slate500,
-        tabBarStyle: {
-          backgroundColor: dark ? '#0f172a' : palette.white,
-          borderTopColor: dark ? palette.slate800 : palette.slate200,
-        },
-      }}
-    >
-      <ClienteTab.Screen
-        name="TabClienteInicio"
-        component={ClienteHomeStackNavigator}
-        options={{
-          title: 'Início',
-          tabBarIcon: ({ color, size }) => <MaterialIcons name="home" size={size} color={color} />,
-        }}
-      />
-      <ClienteTab.Screen
-        name="TabClienteCarrinho"
-        component={ClienteCarrinhoStackNavigator}
-        options={{
-          title: 'Carrinho',
-          tabBarIcon: ({ color, size }) => <CarrinhoTabIcon color={color} size={size} />,
-        }}
-      />
-      <ClienteTab.Screen
-        name="TabClientePedidos"
-        component={ClientePedidosStackNavigator}
-        options={{
-          title: 'Pedidos',
-          tabBarIcon: ({ color, size }) => <MaterialIcons name="receipt-long" size={size} color={color} />,
-        }}
-      />
-    </ClienteTab.Navigator>
-  );
-}
-
-function ClienteRootNavigator(): React.JSX.Element {
-  return <ClienteTabNavigator />;
-}
-
-function AdminStackNavigator(): React.JSX.Element {
-  return (
-    <AdminStack.Navigator screenOptions={{ headerShown: false }}>
-      <AdminStack.Screen name="AdminHome" component={AdminHomeScreen} />
-      <AdminStack.Screen name="AdminCriar" component={AdminCriarScreen} />
-      <AdminStack.Screen name="AdminCupons" component={AdminCuponsScreen} />
-      <AdminStack.Screen name="AdminRelatorios" component={AdminRelatoriosScreen} />
-      <AdminStack.Screen name="AdminRestaurantes" component={AdminRestaurantesScreen} />
-      <AdminStack.Screen name="AdminEntregadores" component={AdminEntregadoresScreen} />
-      <AdminStack.Screen name="AdminClientes" component={AdminClientesScreen} />
-      <AdminStack.Screen name="AdminRestaurantesPendentes" component={AdminRestaurantesPendentesScreen} />
-      <AdminStack.Screen name="AdminEntregadoresPendentes" component={AdminEntregadoresPendentesScreen} />
-      <AdminStack.Screen name="AdminPedidosAndamento" component={AdminPedidosAndamentoScreen} />
-      <AdminStack.Screen name="AdminPedidoDetalhe" component={AdminPedidoDetalheScreen} />
-      <AdminStack.Screen name="AdminReembolso" component={AdminReembolsoScreen} />
-      <AdminStack.Screen name="AdminTaxas" component={AdminTaxasScreen} />
-      <AdminStack.Screen name="AdminTickets" component={AdminTicketsScreen} />
-      <AdminStack.Screen name="AdminTicketDetalhe" component={AdminTicketDetalheScreen} />
-    </AdminStack.Navigator>
-  );
-}
-
-function EntregadorStackNavigator(): React.JSX.Element {
-  return (
-    <EntregadorStack.Navigator screenOptions={{ headerShown: false }}>
-      <EntregadorStack.Screen name="EntregadorHome" component={EntregadorHomeScreen} />
-      <EntregadorStack.Screen name="EntregadorArea" component={EntregadorAreaScreen} />
-      <EntregadorStack.Screen name="EntregadorPedidoDetalhe" component={EntregadorPedidoDetalheScreen} />
-      <EntregadorStack.Screen name="EntregadorPerfil" component={EntregadorPerfilScreen} />
-      <EntregadorStack.Screen name="EntregadorGanhos" component={EntregadorGanhosScreen} />
-    </EntregadorStack.Navigator>
-  );
-}
-
-function SemPapelScreen(): React.JSX.Element {
-  const dark = useColorScheme() === 'dark';
-  const bg = dark ? palette.backgroundDark : palette.backgroundLight;
-  const text = dark ? palette.slate100 : palette.slate900;
-  const { setToken } = useAuth();
-  return (
-    <SafeAreaView style={[semStyles.safe, { backgroundColor: bg }]} edges={['top', 'bottom']}>
-      <Text style={[semStyles.title, { color: text }]}>Perfil não reconhecido</Text>
-      <Text style={[semStyles.sub, { color: text }]}>
-        O token não contém um papel suportado neste aplicativo. Saia e entre com outro utilizador.
-      </Text>
-      <Pressable style={semStyles.btn} onPress={() => void setToken(null)}>
-        <Text style={semStyles.btnText}>Sair</Text>
-      </Pressable>
-    </SafeAreaView>
-  );
-}
-
-const semStyles = StyleSheet.create({
-  safe: { flex: 1, padding: 24, justifyContent: 'center' },
-  title: { fontSize: 20, fontWeight: '800', marginBottom: 12 },
-  sub: { fontSize: 15, lineHeight: 22, marginBottom: 24 },
-  btn: {
-    backgroundColor: palette.primary,
-    height: 48,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  btnText: { color: palette.white, fontWeight: '700', fontSize: 16 },
-});
-
-const tabIconStyles = StyleSheet.create({
-  badge: {
-    position: 'absolute',
-    right: -8,
-    top: -4,
-    backgroundColor: palette.primary,
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 3,
-  },
-  badgeText: { color: palette.white, fontSize: 10, fontWeight: '800' },
-});
-
-type TabPart = {
-  name: keyof MainTabParamList;
-  component: () => React.JSX.Element;
-  title: string;
-};
-
-function AuthenticatedRoot(): React.JSX.Element {
-  const { hasRole } = useAuth();
-
-  const parts: TabPart[] = [];
-  if (hasRole('ROLE_CLIENTE')) {
-    parts.push({ name: 'TabCliente', component: ClienteRootNavigator, title: 'Cliente' });
-  }
-  if (hasRole('ROLE_RESTAURANTE')) {
-    parts.push({ name: 'TabRestaurante', component: RestauranteStackNavigator, title: 'Meu negócio' });
-  }
-  if (hasRole('ROLE_ADMIN')) {
-    parts.push({ name: 'TabAdmin', component: AdminStackNavigator, title: 'Admin' });
-  }
-  if (hasRole('ROLE_ENTREGADOR')) {
-    parts.push({ name: 'TabEntregador', component: EntregadorStackNavigator, title: 'Entrega' });
-  }
-
-  if (parts.length === 0) {
-    return <SemPapelScreen />;
-  }
-
-  const body =
-    parts.length === 1 ? (
-      (() => {
-        const C = parts[0].component;
-        return <C />;
-      })()
-    ) : (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: palette.primary,
-        tabBarInactiveTintColor: palette.slate500,
-      }}
-    >
-      {parts.map((p) => (
-        <Tab.Screen key={p.name} name={p.name} component={p.component} options={{ title: p.title }} />
-      ))}
-    </Tab.Navigator>
-    );
-
-  return <CartProvider>{body}</CartProvider>;
-}
-
-export function AppNavigator(): React.JSX.Element {
-  const scheme = useColorScheme();
-  const { token, isReady } = useAuth();
-  const dark = scheme === 'dark';
-
-  if (!isReady) {
-    return (
-      <View style={[styles.boot, { backgroundColor: dark ? palette.backgroundDark : palette.backgroundLight }]}>
-        <ActivityIndicator size="large" color={palette.primary} />
-      </View>
-    );
-  }
-
-  const navTheme = dark
-    ? {
-        ...DarkTheme,
-        colors: {
-          ...DarkTheme.colors,
-          primary: palette.primary,
-          background: palette.backgroundDark,
-          card: palette.slate800,
-          text: palette.slate100,
-          border: palette.slate700,
-        },
-      }
-    : {
-        ...DefaultTheme,
-        colors: {
-          ...DefaultTheme.colors,
-          primary: palette.primary,
-          background: palette.backgroundLight,
-          card: palette.white,
-          text: palette.slate900,
-          border: palette.slate200,
-        },
-      };
-
-  return (
-    <NavigationContainer theme={navTheme}>
-      {!token ? (
-        <GuestStack.Navigator
-          key="guest"
-          initialRouteName="Login"
-          screenOptions={{ headerShown: false, animation: 'slide_from_right' }}
-        >
-          <GuestStack.Screen name="Login" component={LoginScreen} />
-          <GuestStack.Screen name="RestauranteCadastro" component={RestauranteCadastroScreen} />
-          <GuestStack.Screen name="ClienteCadastro" component={ClienteCadastroScreen} />
-          <GuestStack.Screen name="EntregadorCadastro" component={EntregadorCadastroScreen} />
-        </GuestStack.Navigator>
-      ) : (
-        <AuthenticatedRoot key="auth" />
-      )}
-    </NavigationContainer>
-  );
-}
-
-const styles = StyleSheet.create({
-  boot: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-});
+﻿import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { ActivityIndicator, useColorScheme, Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../context/AuthContext';
+import { CartProvider } from '../context/CartContext';
+import { palette } from '../theme/colors';
+import type {
+  AdminStackParamList,
+  EntregadorStackParamList,
+  GuestStackParamList,
+  MainTabParamList,
+} from './types';
+import { LoginScreen } from '../screens/LoginScreen';
+import { RestauranteCadastroScreen } from '../screens/RestauranteCadastroScreen';
+import { ClienteCadastroScreen } from '../screens/ClienteCadastroScreen';
+import { EntregadorCadastroScreen } from '../screens/EntregadorCadastroScreen';
+import { AdminHomeScreen } from '../screens/AdminHomeScreen';
+import { AdminCriarScreen } from '../screens/AdminCriarScreen';
+import { AdminCuponsScreen } from '../screens/AdminCuponsScreen';
+import { AdminRelatoriosScreen } from '../screens/AdminRelatoriosScreen';
+import { AdminRestaurantesScreen } from '../screens/AdminRestaurantesScreen';
+import { AdminEntregadoresScreen } from '../screens/AdminEntregadoresScreen';
+import { AdminClientesScreen } from '../screens/AdminClientesScreen';
+import { AdminRestaurantesPendentesScreen } from '../screens/AdminRestaurantesPendentesScreen';
+import { AdminEntregadoresPendentesScreen } from '../screens/AdminEntregadoresPendentesScreen';
+import { AdminPedidosAndamentoScreen } from '../screens/AdminPedidosAndamentoScreen';
+import { AdminPedidoDetalheScreen } from '../screens/AdminPedidoDetalheScreen';
+import { AdminReembolsoScreen } from '../screens/AdminReembolsoScreen';
+import { AdminTaxasScreen } from '../screens/AdminTaxasScreen';
+import { AdminTicketsScreen } from '../screens/AdminTicketsScreen';
+import { AdminTicketDetalheScreen } from '../screens/AdminTicketDetalheScreen';
+import { EntregadorHomeScreen } from '../screens/EntregadorHomeScreen';
+import { EntregadorAreaScreen } from '../screens/EntregadorAreaScreen';
+import { EntregadorPedidoDetalheScreen } from '../screens/EntregadorPedidoDetalheScreen';
+import { EntregadorPerfilScreen } from '../screens/EntregadorPerfilScreen';
+import { EntregadorGanhosScreen } from '../screens/EntregadorGanhosScreen';
+import { ClienteRootNavigator } from './navigators/ClienteNavigator';
+import { RestauranteStackNavigator } from './navigators/RestauranteNavigator';
+
+const GuestStack = createNativeStackNavigator<GuestStackParamList>();
+const AdminStack = createNativeStackNavigator<AdminStackParamList>();
+const EntregadorStack = createNativeStackNavigator<EntregadorStackParamList>();
+const Tab = createBottomTabNavigator<MainTabParamList>();
+
+function AdminStackNavigator(): React.JSX.Element {
+  return (
+    <AdminStack.Navigator screenOptions={{ headerShown: false }}>
+      <AdminStack.Screen name="AdminHome" component={AdminHomeScreen} />
+      <AdminStack.Screen name="AdminCriar" component={AdminCriarScreen} />
+      <AdminStack.Screen name="AdminCupons" component={AdminCuponsScreen} />
+      <AdminStack.Screen name="AdminRelatorios" component={AdminRelatoriosScreen} />
+      <AdminStack.Screen name="AdminRestaurantes" component={AdminRestaurantesScreen} />
+      <AdminStack.Screen name="AdminEntregadores" component={AdminEntregadoresScreen} />
+      <AdminStack.Screen name="AdminClientes" component={AdminClientesScreen} />
+      <AdminStack.Screen name="AdminRestaurantesPendentes" component={AdminRestaurantesPendentesScreen} />
+      <AdminStack.Screen name="AdminEntregadoresPendentes" component={AdminEntregadoresPendentesScreen} />
+      <AdminStack.Screen name="AdminPedidosAndamento" component={AdminPedidosAndamentoScreen} />
+      <AdminStack.Screen name="AdminPedidoDetalhe" component={AdminPedidoDetalheScreen} />
+      <AdminStack.Screen name="AdminReembolso" component={AdminReembolsoScreen} />
+      <AdminStack.Screen name="AdminTaxas" component={AdminTaxasScreen} />
+      <AdminStack.Screen name="AdminTickets" component={AdminTicketsScreen} />
+      <AdminStack.Screen name="AdminTicketDetalhe" component={AdminTicketDetalheScreen} />
+    </AdminStack.Navigator>
+  );
+}
+
+function EntregadorStackNavigator(): React.JSX.Element {
+  return (
+    <EntregadorStack.Navigator screenOptions={{ headerShown: false }}>
+      <EntregadorStack.Screen name="EntregadorHome" component={EntregadorHomeScreen} />
+      <EntregadorStack.Screen name="EntregadorArea" component={EntregadorAreaScreen} />
+      <EntregadorStack.Screen name="EntregadorPedidoDetalhe" component={EntregadorPedidoDetalheScreen} />
+      <EntregadorStack.Screen name="EntregadorPerfil" component={EntregadorPerfilScreen} />
+      <EntregadorStack.Screen name="EntregadorGanhos" component={EntregadorGanhosScreen} />
+    </EntregadorStack.Navigator>
+  );
+}
+
+function SemPapelScreen(): React.JSX.Element {
+  const dark = useColorScheme() === 'dark';
+  const bg = dark ? palette.backgroundDark : palette.backgroundLight;
+  const text = dark ? palette.slate100 : palette.slate900;
+  const { setToken } = useAuth();
+  return (
+    <SafeAreaView style={[semStyles.safe, { backgroundColor: bg }]} edges={['top', 'bottom']}>
+      <Text style={[semStyles.title, { color: text }]}>Perfil não reconhecido</Text>
+      <Text style={[semStyles.sub, { color: text }]}>
+        O token não contém um papel suportado neste aplicativo. Saia e entre com outro utilizador.
+      </Text>
+      <Pressable style={semStyles.btn} onPress={() => void setToken(null)}>
+        <Text style={semStyles.btnText}>Sair</Text>
+      </Pressable>
+    </SafeAreaView>
+  );
+}
+
+const semStyles = StyleSheet.create({
+  safe: { flex: 1, padding: 24, justifyContent: 'center' },
+  title: { fontSize: 20, fontWeight: '800', marginBottom: 12 },
+  sub: { fontSize: 15, lineHeight: 22, marginBottom: 24 },
+  btn: {
+    backgroundColor: palette.primary,
+    height: 48,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  btnText: { color: palette.white, fontWeight: '700', fontSize: 16 },
+});
+
+type TabPart = {
+  name: keyof MainTabParamList;
+  component: () => React.JSX.Element;
+  title: string;
+};
+
+function AuthenticatedRoot(): React.JSX.Element {
+  const { hasRole } = useAuth();
+
+  const parts: TabPart[] = [];
+  if (hasRole('ROLE_CLIENTE')) {
+    parts.push({ name: 'TabCliente', component: ClienteRootNavigator, title: 'Cliente' });
+  }
+  if (hasRole('ROLE_RESTAURANTE')) {
+    parts.push({ name: 'TabRestaurante', component: RestauranteStackNavigator, title: 'Meu negócio' });
+  }
+  if (hasRole('ROLE_ADMIN')) {
+    parts.push({ name: 'TabAdmin', component: AdminStackNavigator, title: 'Admin' });
+  }
+  if (hasRole('ROLE_ENTREGADOR')) {
+    parts.push({ name: 'TabEntregador', component: EntregadorStackNavigator, title: 'Entrega' });
+  }
+
+  if (parts.length === 0) {
+    return <SemPapelScreen />;
+  }
+
+  const body =
+    parts.length === 1 ? (
+      (() => {
+        const C = parts[0].component;
+        return <C />;
+      })()
+    ) : (
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: palette.primary,
+        tabBarInactiveTintColor: palette.slate500,
+      }}
+    >
+      {parts.map((p) => (
+        <Tab.Screen key={p.name} name={p.name} component={p.component} options={{ title: p.title }} />
+      ))}
+    </Tab.Navigator>
+    );
+
+  return <CartProvider>{body}</CartProvider>;
+}
+
+export function AppNavigator(): React.JSX.Element {
+  const scheme = useColorScheme();
+  const { token, isReady } = useAuth();
+  const dark = scheme === 'dark';
+
+  if (!isReady) {
+    return (
+      <View style={[styles.boot, { backgroundColor: dark ? palette.backgroundDark : palette.backgroundLight }]}>
+        <ActivityIndicator size="large" color={palette.primary} />
+      </View>
+    );
+  }
+
+  const navTheme = dark
+    ? {
+        ...DarkTheme,
+        colors: {
+          ...DarkTheme.colors,
+          primary: palette.primary,
+          background: palette.backgroundDark,
+          card: palette.slate800,
+          text: palette.slate100,
+          border: palette.slate700,
+        },
+      }
+    : {
+        ...DefaultTheme,
+        colors: {
+          ...DefaultTheme.colors,
+          primary: palette.primary,
+          background: palette.backgroundLight,
+          card: palette.white,
+          text: palette.slate900,
+          border: palette.slate200,
+        },
+      };
+
+  return (
+    <NavigationContainer theme={navTheme}>
+      {!token ? (
+        <GuestStack.Navigator
+          key="guest"
+          initialRouteName="Login"
+          screenOptions={{ headerShown: false, animation: 'slide_from_right' }}
+        >
+          <GuestStack.Screen name="Login" component={LoginScreen} />
+          <GuestStack.Screen name="RestauranteCadastro" component={RestauranteCadastroScreen} />
+          <GuestStack.Screen name="ClienteCadastro" component={ClienteCadastroScreen} />
+          <GuestStack.Screen name="EntregadorCadastro" component={EntregadorCadastroScreen} />
+        </GuestStack.Navigator>
+      ) : (
+        <AuthenticatedRoot key="auth" />
+      )}
+    </NavigationContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  boot: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+});
+
