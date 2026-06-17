@@ -18,7 +18,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRestauranteMeViewModel } from '../hooks/useRestauranteMeViewModel';
 import { usePratosViewModel } from '../hooks/usePratosViewModel';
 import * as pratoService from '../services/pratoService';
-import { formatPrecoBRL } from '../utils/preco';
+import { formatMoney } from '../utils/money';
 import { resolveMediaUrl } from '../utils/imageUrl';
 import { palette } from '../theme/colors';
 import type { RestauranteStackParamList } from '../navigation/types';
@@ -70,7 +70,7 @@ export function PratosListScreen({ navigation }: Props): React.JSX.Element {
               {item.descricao}
             </Text>
           ) : null}
-          <Text style={styles.preco}>{formatPrecoBRL(Number(item.preco))}</Text>
+          <Text style={styles.preco}>{formatMoney(Number(item.preco))}</Text>
           <View style={styles.availRow}>
             <Text style={{ color: sub, fontSize: 13 }}>Disponível</Text>
             <Switch

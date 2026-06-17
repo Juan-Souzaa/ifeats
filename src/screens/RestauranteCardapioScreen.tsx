@@ -16,7 +16,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRestauranteCardapioViewModel } from '../hooks/useRestauranteCardapioViewModel';
 import type { ClienteStackParamList, RestauranteStackParamList } from '../navigation/types';
 import type { CategoriaMenu } from '../types/api';
-import { formatPrecoBRL } from '../utils/preco';
+import { formatMoney } from '../utils/money';
 import { formatContagemAvaliacoes } from '../utils/texto';
 import { RestauranteCover } from '../components/RestauranteCover';
 import { resolveMediaUrl } from '../utils/imageUrl';
@@ -225,7 +225,7 @@ export function RestauranteCardapioScreen({ navigation, route }: Props): React.J
                       {item.descricao}
                     </Text>
                   ) : null}
-                  <Text style={styles.itemPreco}>{formatPrecoBRL(Number(item.preco))}</Text>
+                  <Text style={styles.itemPreco}>{formatMoney(Number(item.preco))}</Text>
                 </View>
                 <View style={styles.thumbCol}>
                   {resolveMediaUrl(item.fotoUrl) ? (

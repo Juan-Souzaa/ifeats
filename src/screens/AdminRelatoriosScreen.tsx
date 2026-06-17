@@ -29,7 +29,7 @@ import {
 import { palette } from '../theme/colors';
 import { spacing, radius } from '../theme/spacing';
 import { diasRelativosApi, formatDataBR, hojeApi } from '../utils/data';
-import { formatPrecoBRL } from '../utils/preco';
+import { formatMoney } from '../utils/money';
 
 type Props = NativeStackScreenProps<AdminStackParamList, 'AdminRelatorios'>;
 
@@ -174,7 +174,7 @@ export function AdminRelatoriosScreen({ navigation }: Props): React.JSX.Element 
         <>
           {vendasChart.length > 0 ? (
             <Card style={styles.chartCard}>
-              <BarChart title="Vendas por dia" items={vendasChart} formatValue={(v) => formatPrecoBRL(v)} />
+              <BarChart title="Vendas por dia" items={vendasChart} formatValue={(v) => formatMoney(v)} />
             </Card>
           ) : null}
           {vendas.map((p) => (
@@ -192,7 +192,7 @@ export function AdminRelatoriosScreen({ navigation }: Props): React.JSX.Element 
           <Text style={{ color: c.sub }}>Volume total</Text>
           <MoneyText value={distribuicao.volumeTotal} accent />
           <View style={{ marginTop: spacing.lg }}>
-            <BarChart title="Distribuição de valores" items={distribChart} formatValue={(v) => formatPrecoBRL(v)} />
+            <BarChart title="Distribuição de valores" items={distribChart} formatValue={(v) => formatMoney(v)} />
           </View>
         </Card>
       ) : data ? (
@@ -215,7 +215,7 @@ export function AdminRelatoriosScreen({ navigation }: Props): React.JSX.Element 
                 { label: 'Entregadores', value: Number(data.distribuicaoEntregadores), color: '#16a34a' },
                 { label: 'Taxa plataforma', value: Number(data.taxaPlataforma), color: palette.primary },
               ]}
-              formatValue={(v) => formatPrecoBRL(v)}
+              formatValue={(v) => formatMoney(v)}
             />
           </Card>
           <Card>

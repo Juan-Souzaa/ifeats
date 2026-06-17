@@ -19,13 +19,13 @@ import {
 import { palette } from '../theme/colors';
 import { spacing, radius } from '../theme/spacing';
 import { formatDataBR, parseApiDate } from '../utils/data';
-import { formatPrecoBRL } from '../utils/preco';
+import { formatMoney } from '../utils/money';
 
 type Props = NativeStackScreenProps<AdminStackParamList, 'AdminCupons'>;
 
 function descontoLabel(cup: CupomResponseDTO): string {
   if (cup.tipoDesconto === 'PERCENTUAL') return `${cup.valorDesconto}% OFF`;
-  return `${formatPrecoBRL(Number(cup.valorDesconto))} OFF`;
+  return `${formatMoney(Number(cup.valorDesconto))} OFF`;
 }
 
 function CupomCard({
@@ -78,7 +78,7 @@ function CupomCard({
         <MetaItem
           icon="shopping-cart"
           label="Pedido mín."
-          value={Number(item.valorMinimo) > 0 ? formatPrecoBRL(Number(item.valorMinimo)) : 'Sem mínimo'}
+          value={Number(item.valorMinimo) > 0 ? formatMoney(Number(item.valorMinimo)) : 'Sem mínimo'}
         />
       </View>
 
