@@ -1,18 +1,16 @@
 import { useCallback, useState } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
 import type { CupomRequestDTO, CupomResponseDTO, TipoDesconto } from '../types/api';
 import * as cupomService from '../services/cupomService';
 import { daquiDiasApi, hojeApi } from '../utils/data';
+import { useAsyncFocusFetch } from './useAsyncFocusFetch';
 
 function datasPadrao() {
   return { inicio: hojeApi(), fim: daquiDiasApi(30) };
 }
 
 export function useAdminCuponsViewModel() {
-  const [lista, setLista] = useState<CupomResponseDTO[]>([]);
-  const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [codigo, setCodigo] = useState('');
   const [tipoDesconto, setTipoDesconto] = useState<TipoDesconto>('PERCENTUAL');
   const [valorDesconto, setValorDesconto] = useState('');
@@ -22,23 +20,23 @@ export function useAdminCuponsViewModel() {
   const [usosMaximos, setUsosMaximos] = useState('100');
   const [editandoId, setEditandoId] = useState<number | null>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const page = await cupomService.listarTodosCupons();
-      setLista(page.content ?? []);
-    } catch {
-      setError('Não foi possível carregar os cupons.');
-    } finally {
-      setLoading(false);
-    }
+  const fetcher = useCallback(async () => {
+    const page = await cupomService.listarTodosCupons();
+    return page.content ?? [];
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      void load();
-    }, [load])
-  );
+  const {
+    data: lista,
+    loading,
+    error: fetchError,
+    refresh: load,
+  } = useAsyncFocusFetch<CupomResponseDTO[]>(fetcher, [], {
+    errorMessage: 'Não foi possível carregar os cupons.',
+    initialData: [],
+  });
+
+  const error = formError ?? fetchError;
+  const setError = setFormError;
 
   const montarDto = useCallback(
     (): CupomRequestDTO => ({
@@ -140,7 +138,7 @@ export function useAdminCuponsViewModel() {
   );
 
   return {
-    lista,
+    lista: lista ?? [],
     loading,
     busy,
     error,
