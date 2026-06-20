@@ -1,5 +1,5 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -18,7 +18,6 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { CategoriaChips } from '../components/restaurante/CategoriaChips';
 import { RestauranteHighlightCard } from '../components/restaurante/RestauranteHighlightCard';
 import { RestauranteListRow } from '../components/restaurante/RestauranteListRow';
-import { cozinhaApiForCategoria, matchesCategory, type CatKey } from '../components/restaurante/categorias';
 import type { ClienteStackParamList } from '../navigation/types';
 import type { RestauranteResponseDTO } from '../types/api';
 import { useClienteRestaurantesViewModel } from '../hooks/useClienteRestaurantesViewModel';
@@ -40,8 +39,6 @@ export function ClienteRestaurantesScreen({ navigation }: Props): React.JSX.Elem
 
   const me = useClienteMeViewModel();
   const vm = useClienteRestaurantesViewModel();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [catSelecionada, setCatSelecionada] = useState<CatKey>('all');
 
   const enderecoEntrega = useMemo(() => {
     if (me.loading && !me.data) return 'Carregando…';
@@ -59,39 +56,12 @@ export function ClienteRestaurantesScreen({ navigation }: Props): React.JSX.Elem
     }, [vm.init, me.refresh])
   );
 
-  const onSelectCategoria = useCallback(
-    (key: CatKey) => {
-      setCatSelecionada(key);
-      setSearchQuery('');
-      void vm.filterByCozinha(cozinhaApiForCategoria(key));
-    },
-    [vm.filterByCozinha]
-  );
-
   useEffect(() => {
-    const q = searchQuery.trim();
+    const q = vm.searchQuery.trim();
     if (q.length < 2) return;
     const t = setTimeout(() => void vm.buscar(q), 400);
     return () => clearTimeout(t);
-  }, [searchQuery, vm.buscar]);
-
-  const filtrados = useMemo(() => {
-    const out = vm.items.filter((r) => matchesCategory(r, catSelecionada));
-    const q = searchQuery.trim().toLowerCase();
-    if (q.length < 2) {
-      return out.filter((r) => !q || r.nome.toLowerCase().includes(q) || r.endereco.toLowerCase().includes(q));
-    }
-    return out;
-  }, [vm.items, catSelecionada, searchQuery]);
-
-  const destaqueItems = useMemo(() => {
-    const aprovados = vm.items.filter((r) => r.status === 'APPROVED' && matchesCategory(r, catSelecionada));
-    const q = searchQuery.trim().toLowerCase();
-    const base = q
-      ? aprovados.filter((r) => r.nome.toLowerCase().includes(q) || r.endereco.toLowerCase().includes(q))
-      : aprovados;
-    return base.slice(0, 6);
-  }, [vm.items, catSelecionada, searchQuery]);
+  }, [vm.searchQuery, vm.buscar]);
 
   const openCardapio = useCallback(
     (restauranteId: number) => navigation.navigate('RestauranteCardapio', { restauranteId }),
@@ -128,8 +98,8 @@ export function ClienteRestaurantesScreen({ navigation }: Props): React.JSX.Elem
           <View style={[styles.searchBox, { backgroundColor: inputBg }]}>
             <MaterialIcons name="search" size={22} color={sub} style={styles.searchIcon} />
             <TextInput
-              value={searchQuery}
-              onChangeText={setSearchQuery}
+              value={vm.searchQuery}
+              onChangeText={vm.setSearchQuery}
               placeholder="Buscar restaurantes, cozinhas, pratos..."
               placeholderTextColor={sub}
               style={[styles.searchInput, { color: text }]}
@@ -140,17 +110,22 @@ export function ClienteRestaurantesScreen({ navigation }: Props): React.JSX.Elem
           </View>
         </View>
 
-        <CategoriaChips dark={dark} textColor={text} selected={catSelecionada} onSelect={onSelectCategoria} />
+        <CategoriaChips
+          dark={dark}
+          textColor={text}
+          selected={vm.catSelecionada}
+          onSelect={(key) => void vm.selecionarCategoria(key)}
+        />
 
         <View style={styles.destaquesHeader}>
           <Text style={[styles.blockTitle, { color: text }]}>Destaques</Text>
-          <Pressable hitSlop={8} onPress={() => onSelectCategoria('all')}>
+          <Pressable hitSlop={8} onPress={() => void vm.selecionarCategoria('all')}>
             <Text style={styles.verTodos}>Ver todos</Text>
           </Pressable>
         </View>
-        {destaqueItems.length > 0 ? (
+        {vm.destaqueItems.length > 0 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.destaquesScroll}>
-            {destaqueItems.map((it) => (
+            {vm.destaqueItems.map((it) => (
               <RestauranteHighlightCard
                 key={it.id}
                 item={it}
@@ -170,10 +145,7 @@ export function ClienteRestaurantesScreen({ navigation }: Props): React.JSX.Elem
         </Text>
       </>
     ),
-    [
-      stickyBg, sub, text, dark, inputBg, searchQuery, catSelecionada, destaqueItems,
-      enderecoEntrega, navigation, onSelectCategoria, openCardapio,
-    ]
+    [stickyBg, sub, text, dark, inputBg, vm, enderecoEntrega, navigation, openCardapio]
   );
 
   const bottomPad = insets.bottom + 72;
@@ -192,7 +164,7 @@ export function ClienteRestaurantesScreen({ navigation }: Props): React.JSX.Elem
         <Text style={styles.err}>{vm.error}</Text>
       ) : (
         <FlatList
-          data={filtrados}
+          data={vm.filtrados}
           keyExtractor={(item) => String(item.id)}
           renderItem={({ item }: { item: RestauranteResponseDTO }) => (
             <RestauranteListRow
