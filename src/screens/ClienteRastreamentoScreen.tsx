@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -8,13 +8,13 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 import type { ClientePedidosStackParamList } from '../navigation/types';
 
-import type { RastreamentoDTO, StatusPedido } from '../types/api';
+import type { StatusPedido } from '../types/api';
 
 import { useRoutePolyline } from '../hooks/useRoutePolyline';
 
 import { DeliveryMap, type DeliveryMapMarker } from '../components/map/DeliveryMap';
 
-import * as pedidoService from '../services/pedidoService';
+import { useClienteRastreamentoViewModel } from '../hooks/useClienteRastreamentoViewModel';
 
 import { Card, ErrorBanner, PedidoTimeline, ScreenShell, SecondaryButton, useThemeColors } from '../components/ui';
 
@@ -38,47 +38,7 @@ export function ClienteRastreamentoScreen({ navigation, route }: Props): React.J
 
   const c = useThemeColors();
 
-  const [data, setData] = useState<RastreamentoDTO | null>(null);
-
-  const [loading, setLoading] = useState(true);
-
-  const [error, setError] = useState<string | null>(null);
-
-
-
-  const load = useCallback(async () => {
-
-    try {
-
-      const r = await pedidoService.obterRastreamento(pedidoId);
-
-      setData(r);
-
-      setError(null);
-
-    } catch {
-
-      setError('Rastreamento indisponível no momento.');
-
-    } finally {
-
-      setLoading(false);
-
-    }
-
-  }, [pedidoId]);
-
-
-
-  useEffect(() => {
-
-    void load();
-
-    const t = setInterval(() => void load(), 15000);
-
-    return () => clearInterval(t);
-
-  }, [load]);
+  const { data, loading, error, refresh } = useClienteRastreamentoViewModel(pedidoId);
 
 
 
@@ -204,7 +164,7 @@ export function ClienteRastreamentoScreen({ navigation, route }: Props): React.J
 
       rightAction={
 
-        <Pressable onPress={() => void load()} hitSlop={12}>
+        <Pressable onPress={() => void refresh()} hitSlop={12}>
 
           <MaterialIcons name="refresh" size={22} color={palette.primary} />
 
@@ -214,7 +174,7 @@ export function ClienteRastreamentoScreen({ navigation, route }: Props): React.J
 
     >
 
-      {error ? <ErrorBanner message={error} onRetry={() => void load()} /> : null}
+      {error ? <ErrorBanner message={error} onRetry={() => void refresh()} /> : null}
 
 
 
