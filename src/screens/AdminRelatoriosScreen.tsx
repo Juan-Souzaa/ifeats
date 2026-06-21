@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   ActivityIndicator,
@@ -9,13 +9,6 @@ import {
   View,
 } from 'react-native';
 import type { AdminStackParamList } from '../navigation/types';
-import type {
-  PeriodoRelatorio,
-  RelatorioCompletoDTO,
-  RelatorioDistribuicaoDTO,
-  PedidoResponseDTO,
-} from '../types/api';
-import * as adminRelatorioService from '../services/adminRelatorioService';
 import {
   BarChart,
   Card,
@@ -26,110 +19,38 @@ import {
   ScreenShell,
   useThemeColors,
 } from '../components/ui';
+import { PERIODOS_RELATORIO, useAdminRelatoriosViewModel } from '../hooks/useAdminRelatoriosViewModel';
 import { palette } from '../theme/colors';
 import { spacing, radius } from '../theme/spacing';
-import { diasRelativosApi, formatDataBR, hojeApi } from '../utils/data';
+import { formatDataBR } from '../utils/data';
 import { formatMoney } from '../utils/money';
 
 type Props = NativeStackScreenProps<AdminStackParamList, 'AdminRelatorios'>;
 
-const PERIODOS: { key: PeriodoRelatorio; label: string }[] = [
-  { key: 'HOJE', label: 'Hoje' },
-  { key: 'SEMANA', label: 'Semana' },
-  { key: 'MES', label: 'Mês' },
-  { key: 'CUSTOMIZADO', label: 'Personalizado' },
-];
-
-function agruparVendasPorDia(pedidos: PedidoResponseDTO[]): { label: string; value: number }[] {
-  const map = new Map<string, number>();
-  for (const p of pedidos) {
-    const dia = p.criadoEm?.slice(0, 10) ?? '—';
-    map.set(dia, (map.get(dia) ?? 0) + Number(p.total));
-  }
-  return [...map.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .slice(-7)
-    .map(([dia, value]) => ({
-      label: formatDataBR(dia),
-      value,
-    }));
-}
-
 export function AdminRelatoriosScreen({ navigation }: Props): React.JSX.Element {
   const c = useThemeColors();
-  const [periodo, setPeriodo] = useState<PeriodoRelatorio>('MES');
-  const [aba, setAba] = useState<'completo' | 'vendas' | 'distribuicao'>('completo');
-  const [customInicio, setCustomInicio] = useState(() => diasRelativosApi(-30));
-  const [customFim, setCustomFim] = useState(hojeApi);
-  const [data, setData] = useState<RelatorioCompletoDTO | null>(null);
-  const [vendas, setVendas] = useState<PedidoResponseDTO[]>([]);
-  const [distribuicao, setDistribuicao] = useState<RelatorioDistribuicaoDTO | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const filtro = useMemo(
-    () => ({
-      periodo,
-      dataInicio: periodo === 'CUSTOMIZADO' ? customInicio : undefined,
-      dataFim: periodo === 'CUSTOMIZADO' ? customFim : undefined,
-    }),
-    [periodo, customInicio, customFim]
-  );
-
-  const load = useCallback(async () => {
-    if (periodo === 'CUSTOMIZADO' && (!customInicio || !customFim)) {
-      setError('Selecione as datas do período personalizado.');
-      return;
-    }
-    if (periodo === 'CUSTOMIZADO' && customFim < customInicio) {
-      setError('A data fim deve ser igual ou posterior à data início.');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    try {
-      const [r, v, d] = await Promise.all([
-        adminRelatorioService.relatorioCompleto(filtro),
-        adminRelatorioService.relatorioVendas(0, 50),
-        adminRelatorioService.relatorioDistribuicao(filtro),
-      ]);
-      setData(r);
-      setVendas(v.content ?? []);
-      setDistribuicao(d);
-    } catch {
-      setError('Não foi possível carregar os relatórios.');
-    } finally {
-      setLoading(false);
-    }
-  }, [filtro, periodo, customInicio, customFim]);
-
-  useEffect(() => {
-    if (periodo !== 'CUSTOMIZADO') void load();
-  }, [periodo, load]);
-
-  const vendasChart = useMemo(() => agruparVendasPorDia(vendas), [vendas]);
+  const vm = useAdminRelatoriosViewModel();
 
   const distribChart = useMemo(() => {
-    if (!distribuicao) return [];
+    if (!vm.distribuicao) return [];
     return [
-      { label: 'Restaurantes', value: Number(distribuicao.distribuicaoRestaurantes), color: '#2563eb' },
-      { label: 'Entregadores', value: Number(distribuicao.distribuicaoEntregadores), color: '#16a34a' },
-      { label: 'Plataforma', value: Number(distribuicao.distribuicaoPlataforma), color: palette.primary },
+      { label: 'Restaurantes', value: Number(vm.distribuicao.distribuicaoRestaurantes), color: '#2563eb' },
+      { label: 'Entregadores', value: Number(vm.distribuicao.distribuicaoEntregadores), color: '#16a34a' },
+      { label: 'Plataforma', value: Number(vm.distribuicao.distribuicaoPlataforma), color: palette.primary },
     ];
-  }, [distribuicao]);
+  }, [vm.distribuicao]);
 
   return (
     <ScreenShell title="Relatórios" onBack={() => navigation.goBack()}>
-      {error ? <ErrorBanner message={error} onRetry={() => void load()} /> : null}
+      {vm.error ? <ErrorBanner message={vm.error} onRetry={() => void vm.load()} /> : null}
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.periodos}>
-        {PERIODOS.map((p) => {
-          const on = periodo === p.key;
+        {PERIODOS_RELATORIO.map((p) => {
+          const on = vm.periodo === p.key;
           return (
             <Pressable
               key={p.key}
-              onPress={() => setPeriodo(p.key)}
+              onPress={() => vm.setPeriodo(p.key)}
               style={[styles.pChip, { backgroundColor: on ? palette.primary : c.chipMutedBg }]}
             >
               <Text style={{ color: on ? palette.white : c.text, fontWeight: '700' }}>{p.label}</Text>
@@ -138,28 +59,28 @@ export function AdminRelatoriosScreen({ navigation }: Props): React.JSX.Element 
         })}
       </ScrollView>
 
-      {periodo === 'CUSTOMIZADO' ? (
+      {vm.periodo === 'CUSTOMIZADO' ? (
         <Card style={styles.customCard}>
           <Text style={[styles.customTitle, { color: c.text }]}>Período personalizado</Text>
-          <DateField label="Data início" value={customInicio} onChange={setCustomInicio} />
+          <DateField label="Data início" value={vm.customInicio} onChange={vm.setCustomInicio} />
           <DateField
             label="Data fim"
-            value={customFim}
-            onChange={setCustomFim}
-            minimumDate={customInicio ? new Date(`${customInicio}T12:00:00`) : undefined}
+            value={vm.customFim}
+            onChange={vm.setCustomFim}
+            minimumDate={vm.customInicio ? new Date(`${vm.customInicio}T12:00:00`) : undefined}
           />
-          <PrimaryButton label="Aplicar período" onPress={() => void load()} loading={loading} />
+          <PrimaryButton label="Aplicar período" onPress={() => void vm.load()} loading={vm.loading} />
         </Card>
       ) : null}
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.periodos}>
         {(['completo', 'vendas', 'distribuicao'] as const).map((k) => {
-          const on = aba === k;
+          const on = vm.aba === k;
           const label = k === 'completo' ? 'Resumo' : k === 'vendas' ? 'Vendas' : 'Distribuição';
           return (
             <Pressable
               key={k}
-              onPress={() => setAba(k)}
+              onPress={() => vm.setAba(k)}
               style={[styles.pChip, { backgroundColor: on ? palette.primary : c.chipMutedBg }]}
             >
               <Text style={{ color: on ? palette.white : c.text, fontWeight: '700', fontSize: 12 }}>{label}</Text>
@@ -168,16 +89,16 @@ export function AdminRelatoriosScreen({ navigation }: Props): React.JSX.Element 
         })}
       </ScrollView>
 
-      {loading ? (
+      {vm.loading ? (
         <ActivityIndicator color={palette.primary} style={{ marginTop: 40 }} />
-      ) : aba === 'vendas' ? (
+      ) : vm.aba === 'vendas' ? (
         <>
-          {vendasChart.length > 0 ? (
+          {vm.vendasChart.length > 0 ? (
             <Card style={styles.chartCard}>
-              <BarChart title="Vendas por dia" items={vendasChart} formatValue={(v) => formatMoney(v)} />
+              <BarChart title="Vendas por dia" items={vm.vendasChart} formatValue={(v) => formatMoney(v)} />
             </Card>
           ) : null}
-          {vendas.map((p) => (
+          {vm.vendas.map((p) => (
             <Card key={p.id} style={{ marginBottom: spacing.sm }}>
               <Text style={{ color: c.text, fontWeight: '700' }}>Pedido #{p.id}</Text>
               <Text style={{ color: c.sub, fontSize: 12, marginTop: 2 }}>
@@ -187,49 +108,49 @@ export function AdminRelatoriosScreen({ navigation }: Props): React.JSX.Element 
             </Card>
           ))}
         </>
-      ) : aba === 'distribuicao' && distribuicao ? (
+      ) : vm.aba === 'distribuicao' && vm.distribuicao ? (
         <Card>
           <Text style={{ color: c.sub }}>Volume total</Text>
-          <MoneyText value={distribuicao.volumeTotal} accent />
+          <MoneyText value={vm.distribuicao.volumeTotal} accent />
           <View style={{ marginTop: spacing.lg }}>
             <BarChart title="Distribuição de valores" items={distribChart} formatValue={(v) => formatMoney(v)} />
           </View>
         </Card>
-      ) : data ? (
+      ) : vm.data ? (
         <>
           <View style={styles.kpiRow}>
             <Card style={styles.kpi}>
               <Text style={{ color: c.sub, fontSize: 12 }}>Vendas</Text>
-              <MoneyText value={data.totalVendas} accent style={{ fontSize: 20 }} />
+              <MoneyText value={vm.data.totalVendas} accent style={{ fontSize: 20 }} />
             </Card>
             <Card style={styles.kpi}>
               <Text style={{ color: c.sub, fontSize: 12 }}>Pedidos</Text>
-              <Text style={{ color: c.text, fontSize: 22, fontWeight: '800' }}>{data.totalPedidos}</Text>
+              <Text style={{ color: c.text, fontSize: 22, fontWeight: '800' }}>{vm.data.totalPedidos}</Text>
             </Card>
           </View>
           <Card style={styles.chartCard}>
             <BarChart
               title="Composição financeira"
               items={[
-                { label: 'Restaurantes', value: Number(data.distribuicaoRestaurantes), color: '#2563eb' },
-                { label: 'Entregadores', value: Number(data.distribuicaoEntregadores), color: '#16a34a' },
-                { label: 'Taxa plataforma', value: Number(data.taxaPlataforma), color: palette.primary },
+                { label: 'Restaurantes', value: Number(vm.data.distribuicaoRestaurantes), color: '#2563eb' },
+                { label: 'Entregadores', value: Number(vm.data.distribuicaoEntregadores), color: '#16a34a' },
+                { label: 'Taxa plataforma', value: Number(vm.data.taxaPlataforma), color: palette.primary },
               ]}
               formatValue={(v) => formatMoney(v)}
             />
           </Card>
           <Card>
             <Text style={{ color: c.sub }}>Ticket médio</Text>
-            <MoneyText value={data.ticketMedio} style={{ marginTop: spacing.xs }} />
+            <MoneyText value={vm.data.ticketMedio} style={{ marginTop: spacing.xs }} />
             <Text style={{ color: c.sub, marginTop: spacing.md }}>Taxa entrega média</Text>
-            <MoneyText value={data.taxaEntregaMedia} />
+            <MoneyText value={vm.data.taxaEntregaMedia} />
             <Text style={{ color: c.sub, marginTop: spacing.md }}>Tendência</Text>
-            <Text style={{ color: c.text, fontWeight: '700' }}>{data.tendencia}</Text>
+            <Text style={{ color: c.text, fontWeight: '700' }}>{vm.data.tendencia}</Text>
             <Text style={{ color: c.sub, marginTop: spacing.md }}>Período</Text>
             <Text style={{ color: c.text, fontWeight: '600' }}>
-              {periodo === 'CUSTOMIZADO'
-                ? `${formatDataBR(customInicio)} – ${formatDataBR(customFim)}`
-                : data.periodo}
+              {vm.periodo === 'CUSTOMIZADO'
+                ? `${formatDataBR(vm.customInicio)} – ${formatDataBR(vm.customFim)}`
+                : vm.data.periodo}
             </Text>
           </Card>
         </>
