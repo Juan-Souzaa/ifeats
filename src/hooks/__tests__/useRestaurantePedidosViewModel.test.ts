@@ -1,9 +1,9 @@
 jest.mock('../useAsyncFocusFetch', () => ({
   useAsyncFocusFetch: jest.fn((fetcher: () => Promise<unknown>) => {
     const React = require('react');
-    const [data, setData] = React.useState<unknown>([]);
+    const [data, setData] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
-    const [error, setError] = React.useState<string | null>(null);
+    const [error, setError] = React.useState(null);
 
     React.useEffect(() => {
       let active = true;
