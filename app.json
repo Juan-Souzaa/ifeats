@@ -39,7 +39,9 @@
         {
           "locationWhenInUsePermission": "O app usa sua localização para cadastro do entregador."
         }
-      ]
+      ],
+      "expo-secure-store",
+      "expo-font"
     ]
   }
 }

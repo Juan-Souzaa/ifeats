@@ -2,10 +2,12 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   Pressable,
   StyleSheet,
+  Switch,
   Text,
   useColorScheme,
   View,
@@ -15,7 +17,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRestauranteMeViewModel } from '../hooks/useRestauranteMeViewModel';
 import { usePratosViewModel } from '../hooks/usePratosViewModel';
-import { formatPrecoBRL } from '../utils/preco';
+import * as pratoService from '../services/pratoService';
+import { formatMoney } from '../utils/money';
 import { resolveMediaUrl } from '../utils/imageUrl';
 import { palette } from '../theme/colors';
 import type { RestauranteStackParamList } from '../navigation/types';
@@ -67,14 +70,45 @@ export function PratosListScreen({ navigation }: Props): React.JSX.Element {
               {item.descricao}
             </Text>
           ) : null}
-          <Text style={styles.preco}>{formatPrecoBRL(Number(item.preco))}</Text>
-          <Pressable
-            onPress={() => navigation.navigate('PratoEditar', { prato: item })}
-            style={styles.editBtn}
-          >
-            <MaterialIcons name="edit" size={16} color={palette.primary} />
-            <Text style={styles.editTx}>Editar</Text>
-          </Pressable>
+          <Text style={styles.preco}>{formatMoney(Number(item.preco))}</Text>
+          <View style={styles.availRow}>
+            <Text style={{ color: sub, fontSize: 13 }}>Disponível</Text>
+            <Switch
+              value={Boolean(item.disponivel)}
+              onValueChange={() => {
+                if (!me.data) return;
+                void pratoService.alternarDisponibilidade(me.data.id, item.id).then(() => pratos.loadFor(me.data!.id));
+              }}
+              trackColor={{ true: palette.primary }}
+            />
+          </View>
+          <View style={styles.actionRow}>
+            <Pressable
+              onPress={() => navigation.navigate('PratoEditar', { prato: item })}
+              style={styles.editBtn}
+            >
+              <MaterialIcons name="edit" size={16} color={palette.primary} />
+              <Text style={styles.editTx}>Editar</Text>
+            </Pressable>
+            <Pressable
+              onPress={() =>
+                Alert.alert('Excluir prato', `Remover "${item.nome}"?`, [
+                  { text: 'Cancelar', style: 'cancel' },
+                  {
+                    text: 'Excluir',
+                    style: 'destructive',
+                    onPress: () => {
+                      if (!me.data) return;
+                      void pratoService.excluirPrato(me.data.id, item.id).then(() => pratos.loadFor(me.data!.id));
+                    },
+                  },
+                ])
+              }
+              hitSlop={8}
+            >
+              <MaterialIcons name="delete-outline" size={22} color="#dc2626" />
+            </Pressable>
+          </View>
         </View>
         {img ? (
           <Image source={{ uri: img }} style={styles.thumb} />
@@ -137,13 +171,9 @@ const styles = StyleSheet.create({
   cat: { fontSize: 12, marginTop: 2 },
   desc: { fontSize: 13, marginTop: 4 },
   preco: { marginTop: 8, fontWeight: '800', fontSize: 16, color: palette.primary },
-  editBtn: {
-    marginTop: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    alignSelf: 'flex-start',
-  },
+  availRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
+  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 16, marginTop: 10 },
+  editBtn: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   editTx: { color: palette.primary, fontWeight: '700', fontSize: 13 },
   thumb: { width: 88, height: 88, borderRadius: 10 },
   thumbPh: {

@@ -4,75 +4,92 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
-  useColorScheme,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import type { GuestStackParamList } from '../navigation/types';
 import { useAuthViewModel } from '../hooks/useAuthViewModel';
+import { useThemeColors } from '../components/ui';
 import { palette } from '../theme/colors';
+import { spacing, radius } from '../theme/spacing';
 
 type Props = NativeStackScreenProps<GuestStackParamList, 'Login'>;
 
-export function LoginScreen({ navigation }: Props): React.JSX.Element {
-  const dark = useColorScheme() === 'dark';
-  const bg = dark ? palette.backgroundDark : palette.backgroundLight;
-  const card = dark ? palette.slate800 : palette.white;
-  const text = dark ? palette.slate100 : palette.slate900;
-  const sub = dark ? palette.slate400 : palette.slate500;
-  const border = dark ? palette.slate700 : palette.slate300;
+const SIGNUP_LINKS: {
+  icon: keyof typeof MaterialIcons.glyphMap;
+  label: string;
+  route: keyof GuestStackParamList;
+}[] = [
+  { icon: 'person-add', label: 'Criar conta cliente', route: 'ClienteCadastro' },
+  { icon: 'storefront', label: 'Cadastrar restaurante', route: 'RestauranteCadastro' },
+  { icon: 'delivery-dining', label: 'Cadastrar entregador', route: 'EntregadorCadastro' },
+];
 
+export function LoginScreen({ navigation }: Props): React.JSX.Element {
+  const c = useThemeColors();
   const vm = useAuthViewModel();
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: bg }]} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: c.outerBg }]} edges={['top', 'bottom']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.flex}
       >
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: text }]}>IFeats</Text>
-          <Text style={[styles.subtitle, { color: sub }]}>Entre com e-mail ou username e senha</Text>
-        </View>
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.brand}>
+            <View style={[styles.brandIcon, { backgroundColor: `${palette.primary}18` }]}>
+              <MaterialIcons name="restaurant" size={28} color={palette.primary} />
+            </View>
+            <Text style={[styles.brandTitle, { color: c.text }]}>IFeats</Text>
+            <Text style={[styles.brandSub, { color: c.sub }]}>
+              Entre com e-mail ou username e senha
+            </Text>
+          </View>
 
-        <View style={[styles.card, { backgroundColor: card, borderColor: border }]}>
-          <Text style={[styles.label, { color: sub }]}>E-mail ou username</Text>
-          <TextInput
-            value={vm.email}
-            onChangeText={vm.setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            placeholder="cliente@email.com ou admin"
-            placeholderTextColor={sub}
-            style={[styles.input, { color: text, borderColor: border }]}
-          />
-          <Text style={[styles.label, { color: sub, marginTop: 12 }]}>Senha</Text>
-          <TextInput
-            value={vm.password}
-            onChangeText={vm.setPassword}
-            secureTextEntry
-            placeholder="••••••••"
-            placeholderTextColor={sub}
-            style={[styles.input, { color: text, borderColor: border }]}
-          />
+          <View style={[styles.inputWrap, { borderColor: c.border, backgroundColor: c.inputBg }]}>
+            <MaterialIcons name="person-outline" size={20} color={c.muted} />
+            <TextInput
+              value={vm.email}
+              onChangeText={vm.setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              placeholder="cliente@email.com ou admin"
+              placeholderTextColor={c.muted}
+              style={[styles.input, { color: c.text }]}
+            />
+          </View>
+
+          <View style={[styles.inputWrap, { borderColor: c.border, backgroundColor: c.inputBg, marginTop: spacing.md }]}>
+            <MaterialIcons name="lock-outline" size={20} color={c.muted} />
+            <TextInput
+              value={vm.password}
+              onChangeText={vm.setPassword}
+              secureTextEntry
+              placeholder="Sua senha"
+              placeholderTextColor={c.muted}
+              style={[styles.input, { color: c.text }]}
+              onSubmitEditing={() => void tryLogin(vm)}
+            />
+          </View>
+
           {vm.error ? <Text style={styles.error}>{vm.error}</Text> : null}
+
           <Pressable
             style={({ pressed }) => [
               styles.primaryBtn,
-              { opacity: pressed || vm.loading ? 0.85 : 1 },
+              { opacity: pressed || vm.loading ? 0.88 : 1 },
             ]}
             disabled={vm.loading}
-            onPress={async () => {
-              try {
-                await vm.login();
-              } catch {
-                /* erro já em vm.error */
-              }
-            }}
+            onPress={() => void tryLogin(vm)}
           >
             {vm.loading ? (
               <ActivityIndicator color={palette.white} />
@@ -80,66 +97,79 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
               <Text style={styles.primaryBtnText}>Entrar</Text>
             )}
           </Pressable>
-        </View>
 
-        <View style={styles.links}>
-          <Pressable style={styles.linkRow} onPress={() => navigation.navigate('ClienteCadastro')}>
-            <MaterialIcons name="person-add" size={20} color={palette.primary} />
-            <Text style={styles.link}>Criar conta cliente</Text>
-          </Pressable>
-          <Pressable style={styles.linkRow} onPress={() => navigation.navigate('RestauranteCadastro')}>
-            <MaterialIcons name="storefront" size={20} color={palette.primary} />
-            <Text style={styles.link}>Cadastrar restaurante</Text>
-          </Pressable>
-          <Pressable style={styles.linkRow} onPress={() => navigation.navigate('EntregadorCadastro')}>
-            <MaterialIcons name="delivery-dining" size={20} color={palette.primary} />
-            <Text style={styles.link}>Cadastrar entregador</Text>
-          </Pressable>
-        </View>
+          <View style={[styles.divider, { backgroundColor: c.border }]} />
+
+          <Text style={[styles.signupLabel, { color: c.sub }]}>Ainda não tem conta?</Text>
+          <View style={styles.signupLinks}>
+            {SIGNUP_LINKS.map((link) => (
+              <Pressable
+                key={link.route}
+                onPress={() => navigation.navigate(link.route)}
+                style={({ pressed }) => [styles.signupRow, { opacity: pressed ? 0.7 : 1 }]}
+              >
+                <MaterialIcons name={link.icon} size={18} color={palette.primary} />
+                <Text style={styles.signupText}>{link.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
+async function tryLogin(vm: ReturnType<typeof useAuthViewModel>): Promise<void> {
+  try {
+    await vm.login();
+  } catch {
+    /* erro já em vm.error */
+  }
+}
+
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  flex: { flex: 1, paddingHorizontal: 20, justifyContent: 'center' },
-  header: { marginBottom: 28, alignItems: 'center' },
-  title: { fontSize: 32, fontWeight: '900', letterSpacing: -0.5 },
-  subtitle: { marginTop: 6, fontSize: 15, fontWeight: '500', textAlign: 'center', paddingHorizontal: 8 },
-  card: {
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 2,
+  flex: { flex: 1 },
+  scroll: {
+    flexGrow: 1,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xxl,
+    justifyContent: 'center',
   },
-  label: { fontSize: 13, fontWeight: '600', marginBottom: 6 },
-  input: {
+  brand: { alignItems: 'center', marginBottom: spacing.xl },
+  brandIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+  },
+  brandTitle: { fontSize: 28, fontWeight: '900', letterSpacing: -0.5 },
+  brandSub: { marginTop: 6, fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  inputWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
     borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 14,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
     height: 48,
-    fontSize: 16,
   },
-  error: { color: '#b91c1c', marginTop: 10, fontSize: 13 },
+  input: { flex: 1, fontSize: 16, paddingVertical: 0 },
+  error: { color: '#b91c1c', marginTop: spacing.md, fontSize: 13, textAlign: 'center' },
   primaryBtn: {
-    marginTop: 20,
+    marginTop: spacing.lg,
     backgroundColor: palette.primary,
     height: 48,
-    borderRadius: 10,
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   primaryBtnText: { color: palette.white, fontWeight: '700', fontSize: 16 },
-  links: { marginTop: 20, gap: 12 },
-  linkRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  link: { color: palette.primary, fontWeight: '700', fontSize: 15 },
+  divider: { height: StyleSheet.hairlineWidth, marginVertical: spacing.xl },
+  signupLabel: { fontSize: 13, fontWeight: '600', marginBottom: spacing.md, textAlign: 'center' },
+  signupLinks: { gap: spacing.md, alignItems: 'center' },
+  signupRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  signupText: { color: palette.primary, fontWeight: '700', fontSize: 15 },
 });

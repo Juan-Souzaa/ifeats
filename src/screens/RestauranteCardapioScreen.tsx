@@ -1,8 +1,8 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
-  ImageBackground,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -16,9 +16,15 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRestauranteCardapioViewModel } from '../hooks/useRestauranteCardapioViewModel';
 import type { ClienteStackParamList, RestauranteStackParamList } from '../navigation/types';
 import type { CategoriaMenu } from '../types/api';
-import { formatPrecoBRL } from '../utils/preco';
+import { formatMoney } from '../utils/money';
+import { formatContagemAvaliacoes } from '../utils/texto';
+import { RestauranteCover } from '../components/RestauranteCover';
 import { resolveMediaUrl } from '../utils/imageUrl';
 import { palette } from '../theme/colors';
+import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
+import * as carrinhoService from '../services/carrinhoService';
+import * as avaliacaoService from '../services/avaliacaoService';
 
 type Props = NativeStackScreenProps<
   RestauranteStackParamList | ClienteStackParamList,
@@ -36,8 +42,44 @@ export function RestauranteCardapioScreen({ navigation, route }: Props): React.J
   const { restauranteId } = route.params;
   const { rest, pratos, tab, setTab, loading, filtered, contagemPorTab } =
     useRestauranteCardapioViewModel(restauranteId);
+  const { hasRole } = useAuth();
+  const isCliente = hasRole('ROLE_CLIENTE');
+  const { refresh, setRestauranteId } = useCart();
+  const [addingId, setAddingId] = useState<number | null>(null);
+  const [addMsg, setAddMsg] = useState<string | null>(null);
+  const [rating, setRating] = useState<{ media: number; total: number } | null>(null);
 
   const dark = useColorScheme() === 'dark';
+
+  useEffect(() => {
+    if (!isCliente || !rest) return;
+    void (async () => {
+      try {
+        const r = await avaliacaoService.resumoRestaurante(restauranteId);
+        setRating({
+          media: Number(r.mediaNotaRestaurante),
+          total: Number(r.totalAvaliacoesRestaurante),
+        });
+      } catch {
+        setRating(null);
+      }
+    })();
+  }, [isCliente, restauranteId, rest?.id]);
+
+  const adicionar = async (pratoId: number) => {
+    setAddingId(pratoId);
+    setAddMsg(null);
+    try {
+      setRestauranteId(restauranteId);
+      await carrinhoService.adicionarItem({ pratoId, quantidade: 1 });
+      await refresh();
+      setAddMsg('Adicionado ao carrinho');
+    } catch {
+      setAddMsg('Não foi possível adicionar ao carrinho');
+    } finally {
+      setAddingId(null);
+    }
+  };
   const bg = dark ? palette.backgroundDark : palette.backgroundLight;
   const text = dark ? palette.slate100 : palette.slate900;
   const sub = dark ? palette.slate400 : palette.slate500;
@@ -84,28 +126,48 @@ export function RestauranteCardapioScreen({ navigation, route }: Props): React.J
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.heroWrap}>
-          <ImageBackground
-            source={{
-              uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuATYfzDEv8z4Y6X74U5QHWWdteT_hUkE40wVX7Mp11W6lUjqqLSN997At6oSQmpt7LShWH7Cr5ad8liAIoNMMn2mFWrGyN8KRhOQbI-72WjaMiiLiJmCH_KXPgt7ce3DM00JdgcR-3RdsvDDTWFwsGhRMHWggAtxSxfqCcTFmmUlT72p-A2lOmyZ1MT1-P3BtHssG7tUt_cvGLB3yeLmW840SfvkL91hc5h3ry5YsG180OSHnedAKmIW_FbOplHL56U_kNYKZJ4',
-            }}
+          <RestauranteCover
+            fotoUrl={rest.fotoUrl}
+            gradient={['#fb923c', '#ea580c']}
             style={styles.hero}
-            imageStyle={{ borderRadius: 12 }}
+            borderRadius={12}
           >
             <LinearGradient colors={['transparent', 'rgba(0,0,0,0.85)']} style={styles.heroGrad}>
               <Text style={styles.heroTitle}>{rest.nome}</Text>
               <Text style={styles.heroSub}>Cardápio • {rest.endereco}</Text>
             </LinearGradient>
-          </ImageBackground>
+          </RestauranteCover>
         </View>
 
         <View style={[styles.info, { borderBottomColor: border }]}>
-          <View style={styles.ratingRow}>
+          <Pressable
+            style={styles.ratingRow}
+            onPress={() =>
+              navigation.navigate('RestauranteAvaliacoes', {
+                restauranteId,
+                restauranteNome: rest.nome,
+              })
+            }
+            disabled={!isCliente}
+          >
             <View style={styles.ratingPill}>
-              <Text style={styles.ratingNum}>—</Text>
+              <Text style={styles.ratingNum}>
+                {rating ? rating.media.toFixed(1) : '—'}
+              </Text>
               <MaterialIcons name="star" size={18} color={palette.primary} />
             </View>
-            <Text style={[styles.rateLink, { color: palette.primary }]}>Avaliações em breve</Text>
-          </View>
+            <Text style={[styles.rateLink, { color: palette.primary }]}>
+              {rating && rating.total > 0
+                ? `${formatContagemAvaliacoes(rating.total)} · Ver todas`
+                : 'Ver avaliações'}
+            </Text>
+            {isCliente ? (
+              <MaterialIcons name="chevron-right" size={22} color={palette.primary} />
+            ) : null}
+          </Pressable>
+          {addMsg ? (
+            <Text style={{ color: palette.primary, fontWeight: '600', fontSize: 13 }}>{addMsg}</Text>
+          ) : null}
           <View style={styles.metaRow}>
             <Meta icon="schedule" text="IFeats" />
             <Meta icon="directions-bike" text={rest.raioEntregaKm != null ? `${rest.raioEntregaKm} km` : 'Raio —'} />
@@ -163,15 +225,33 @@ export function RestauranteCardapioScreen({ navigation, route }: Props): React.J
                       {item.descricao}
                     </Text>
                   ) : null}
-                  <Text style={styles.itemPreco}>{formatPrecoBRL(Number(item.preco))}</Text>
+                  <Text style={styles.itemPreco}>{formatMoney(Number(item.preco))}</Text>
                 </View>
-                {resolveMediaUrl(item.fotoUrl) ? (
-                  <Image source={{ uri: resolveMediaUrl(item.fotoUrl)! }} style={styles.thumb} />
-                ) : (
-                  <View style={[styles.thumb, styles.thumbPh]}>
-                    <MaterialIcons name="restaurant" size={28} color={sub} />
-                  </View>
-                )}
+                <View style={styles.thumbCol}>
+                  {resolveMediaUrl(item.fotoUrl) ? (
+                    <Image source={{ uri: resolveMediaUrl(item.fotoUrl)! }} style={styles.thumb} />
+                  ) : (
+                    <View style={[styles.thumb, styles.thumbPh]}>
+                      <MaterialIcons name="restaurant" size={28} color={sub} />
+                    </View>
+                  )}
+                  {isCliente && item.disponivel !== false ? (
+                    <Pressable
+                      style={styles.addBtn}
+                      onPress={() => void adicionar(item.id)}
+                      disabled={addingId === item.id}
+                    >
+                      {addingId === item.id ? (
+                        <ActivityIndicator color={palette.white} size="small" />
+                      ) : (
+                        <>
+                          <MaterialIcons name="add" size={18} color={palette.white} />
+                          <Text style={styles.addBtnText}>Adicionar</Text>
+                        </>
+                      )}
+                    </Pressable>
+                  ) : null}
+                </View>
               </View>
             ))
           )}
@@ -210,7 +290,7 @@ const styles = StyleSheet.create({
   heroTitle: { color: palette.white, fontSize: 26, fontWeight: '800' },
   heroSub: { color: 'rgba(255,255,255,0.9)', marginTop: 4, fontSize: 13, fontWeight: '500' },
   info: { padding: 16, borderBottomWidth: 1, gap: 12 },
-  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 12, flexWrap: 'wrap' },
   ratingPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -245,10 +325,23 @@ const styles = StyleSheet.create({
   itemNome: { fontSize: 16, fontWeight: '700' },
   itemDesc: { fontSize: 13, marginTop: 4 },
   itemPreco: { marginTop: 8, fontSize: 16, fontWeight: '800', color: palette.primary },
+  thumbCol: { alignItems: 'center', gap: 8 },
   thumb: { width: 96, height: 96, borderRadius: 10 },
   thumbPh: {
     backgroundColor: 'rgba(0,0,0,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
   },
+  addBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: palette.primary,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 10,
+    minWidth: 96,
+    justifyContent: 'center',
+  },
+  addBtnText: { color: palette.white, fontWeight: '800', fontSize: 12 },
 });

@@ -166,3 +166,17 @@ export async function atualizarPrato(
 
   return parsed as PratoResponseDTO;
 }
+
+export async function excluirPrato(restauranteId: number, pratoId: number): Promise<void> {
+  await api.delete(`/api/restaurantes/${restauranteId}/pratos/${pratoId}`);
+}
+
+export async function alternarDisponibilidade(
+  restauranteId: number,
+  pratoId: number
+): Promise<PratoResponseDTO> {
+  const { data } = await api.patch<PratoResponseDTO>(
+    `/api/restaurantes/${restauranteId}/pratos/${pratoId}/disponibilidade`
+  );
+  return data;
+}

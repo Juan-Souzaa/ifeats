@@ -3,7 +3,6 @@ import axios from 'axios';
 const baseURL =
   process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, '') ?? 'http://localhost:8080';
 
-/** Requisições públicas (sem Bearer). */
 export const publicApi = axios.create({
   baseURL,
   timeout: 45000,
@@ -15,7 +14,6 @@ export function configureAuthTokenGetter(getter: () => Promise<string | null>): 
   tokenGetter = getter;
 }
 
-/** Requisições autenticadas (JWT). */
 export const api = axios.create({
   baseURL,
   timeout: 45000,
@@ -26,7 +24,7 @@ api.interceptors.request.use(async (config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
- 
+
   if (config.data instanceof FormData) {
     const h = config.headers;
     if (h && typeof h === 'object') {
@@ -34,6 +32,19 @@ api.interceptors.request.use(async (config) => {
       delete (h as Record<string, unknown>)['content-type'];
     }
   }
+
+  const method = config.method?.toLowerCase();
+  const emptyBody = config.data === null || config.data === undefined;
+  if (emptyBody && method === 'patch' && !config.params) {
+    config.data = {};
+  }
+  if (config.data !== undefined && config.data !== null && !(config.data instanceof FormData)) {
+    const h = config.headers;
+    if (h && typeof h === 'object') {
+      (h as Record<string, unknown>)['Content-Type'] = 'application/json';
+    }
+  }
+
   return config;
 });
 

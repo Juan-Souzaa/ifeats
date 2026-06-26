@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import type { CategoriaMenu, PratoResponseDTO } from '../types/api';
 import * as pratoService from '../services/pratoService';
-import { parsePrecoInput } from '../utils/preco';
+import { parsePrecoInput } from '../utils/money';
 
 export function usePratosViewModel(restauranteId: number | null) {
   const [items, setItems] = useState<PratoResponseDTO[]>([]);
